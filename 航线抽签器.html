@@ -164,16 +164,8 @@
         .header-actions {
             display: flex;
             justify-content: flex-end;
-            align-items: center;
             gap: 10px;
             margin-bottom: 20px;
-        }
-        
-        /* 端口信息样式 */
-        .port-info {
-            color: #666;
-            font-size: 0.9rem;
-            margin-right: auto;
         }
         
         .btn-small {
@@ -351,7 +343,6 @@
         <h1>航线抽签器</h1>
         
         <div class="header-actions">
-            <div id="port-info" class="port-info"></div>
             <button id="login-btn" class="btn-small">登录</button>
             <button id="add-airport-btn" class="btn-small" style="display: none;">添加机场</button>
         </div>
@@ -636,30 +627,6 @@
         function initializeApp() {
             initCountrySelects();
             checkLoginStatus();
-            showPortInformation();
-        }
-        
-        // 显示端口信息
-        function showPortInformation() {
-            const portInfoElement = document.getElementById('port-info');
-            const currentUrl = window.location.href;
-            const url = new URL(currentUrl);
-            
-            // 获取端口号
-            let port = url.port;
-            
-            // 如果是默认端口(80或443)，浏览器通常不会显示
-            if (!port) {
-                if (url.protocol === 'https:') {
-                    port = '443 (HTTPS默认端口)';
-                } else if (url.protocol === 'http:') {
-                    port = '80 (HTTP默认端口)';
-                } else {
-                    port = '本地文件模式 (无端口)';
-                }
-            }
-            
-            portInfoElement.textContent = `当前URL: ${url.hostname} | 端口: ${port}`;
         }
         
         // 检查登录状态
