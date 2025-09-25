@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航线抽签器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .airport-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            position: relative;
+        }
+        
+        .airport {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            width: 45%;
+            transition: all 0.3s ease;
+        }
+        
+        .airport:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .airport h2 {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .airport-code {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4a5568;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .airport-name {
+            font-size: 1rem;
+            color: #718096;
+        }
+        
+        .arrow {
+            font-size: 2rem;
+            color: #a0aec0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .history {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .history h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .history-list {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .history-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* 国家选择样式 */
+        .country-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        /* 头部操作按钮 */
+        .header-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* 端口信息样式 */
+        .port-info {
+            color: #666;
+            font-size: 0.9rem;
+            margin-right: auto;
+        }
+        
+        .btn-small {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .selection-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .selection-group label {
+            font-size: 1rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .country-select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            color: #4a5568;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+            transition: all 0.3s ease;
+        }
+        
+        .country-select:hover {
+            border-color: #667eea;
+        }
+        
+        .country-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .airport-display {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .airport {
+                width: 100%;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>航线抽签器</h1>
+        
+        <div class="header-actions">
+            <div id="port-info" class="port-info"></div>
+            <button id="login-btn" class="btn-small">登录</button>
+            <button id="add-airport-btn" class="btn-small" style="display: none;">添加机场</button>
+        </div>
+        
+        <div class="country-selection">
+            <div class="selection-group">
+                <label for="departure-country">选择起飞机场国家：</label>
+                <select id="departure-country" class="country-select"></select>
+            </div>
+            <div class="selection-group">
+                <label for="arrival-country">选择降落机场国家：</label>
+                <select id="arrival-country" class="country-select"></select>
+            </div>
+        </div>
+        
+        <div class="airport-display">
+            <div class="airport" id="departure-airport">
+                <h2>起飞机场</h2>
+                <div class="airport-code">---</div>
+                <div class="airport-name">点击抽签开始</div>
+            </div>
+            
+            <div class="arrow">➤</div>
+            
+            <div class="airport" id="arrival-airport">
+                <h2>降落机场</h2>
+                <div class="airport-code">---</div>
+                <div class="airport-name">点击抽签开始</div>
+            </div>
+        </div>
+        
+        <button class="btn" id="draw-btn">抽签</button>
+        
+        <div class="history">
+            <h3>历史记录</h3>
+            <div class="history-list" id="history-list">
+                <!-- 历史记录将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>用户登录</h2>
+            <div class="form-group">
+                <label for="username">用户名：</label>
+                <input type="text" id="username" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label for="password">密码：</label>
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            <button id="login-submit" class="btn">登录</button>
+            <div id="login-message" class="message"></div>
+        </div>
+    </div>
+
+    <!-- 添加机场模态框 -->
+    <div id="add-airport-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>添加新机场</h2>
+            <div class="form-group">
+                <label for="new-airport-code">机场四字代码：</label>
+                <input type="text" id="new-airport-code" placeholder="例如：ZBAA">
+            </div>
+            <div class="form-group">
+                <label for="new-airport-name">机场名称：</label>
+                <input type="text" id="new-airport-name" placeholder="例如：北京首都国际机场">
+            </div>
+            <div class="form-group">
+                <label for="new-airport-country">所在国家：</label>
+                <input type="text" id="new-airport-country" placeholder="例如：中国">
+            </div>
+            <button id="add-airport-submit" class="btn">添加</button>
+            <div id="add-airport-message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // 世界主要机场数据（四字代码、名称、国家）
+        const airports = [
+            { code: "ZBAA", name: "北京首都国际机场", country: "中国" },
+            { code: "ZSPD", name: "上海浦东国际机场", country: "中国" },
+            { code: "ZGGG", name: "广州白云国际机场", country: "中国" },
+            { code: "ZGSZ", name: "深圳宝安国际机场", country: "中国" },
+            { code: "VHHH", name: "香港国际机场", country: "中国香港" },
+            { code: "RCTP", name: "台湾桃园国际机场", country: "中国台湾" },
+            { code: "RJAA", name: "东京成田国际机场", country: "日本" },
+            { code: "RJTT", name: "东京羽田国际机场", country: "日本" },
+            { code: "RJBB", name: "大阪关西国际机场", country: "日本" },
+            { code: "RKSI", name: "首尔仁川国际机场", country: "韩国" },
+            { code: "VTBS", name: "曼谷素万那普国际机场", country: "泰国" },
+            { code: "WSSS", name: "新加坡樟宜国际机场", country: "新加坡" },
+            { code: "VIDP", name: "新德里英迪拉·甘地国际机场", country: "印度" },
+            { code: "OMDB", name: "迪拜国际机场", country: "阿联酋" },
+            { code: "EGLL", name: "伦敦希斯罗国际机场", country: "英国" },
+            { code: "LFPG", name: "巴黎戴高乐国际机场", country: "法国" },
+            { code: "EDDF", name: "法兰克福国际机场", country: "德国" },
+            { code: "EHAM", name: "阿姆斯特丹史基浦机场", country: "荷兰" },
+            { code: "LEMD", name: "马德里巴拉哈斯机场", country: "西班牙" },
+            { code: "LEBL", name: "巴塞罗那埃尔普拉特机场", country: "西班牙" },
+            { code: "LIMC", name: "米兰马尔彭萨机场", country: "意大利" },
+            { code: "LIRF", name: "罗马菲乌米奇诺机场", country: "意大利" },
+            { code: "LTBA", name: "伊斯坦布尔阿塔图尔克机场", country: "土耳其" },
+            { code: "KJFK", name: "纽约肯尼迪国际机场", country: "美国" },
+            { code: "KLAX", name: "洛杉矶国际机场", country: "美国" },
+            { code: "KORD", name: "芝加哥奥黑尔国际机场", country: "美国" },
+            { code: "KDFW", name: "达拉斯-沃思堡国际机场", country: "美国" },
+            { code: "KATL", name: "亚特兰大哈茨菲尔德-杰克逊国际机场", country: "美国" },
+            { code: "CYYZ", name: "多伦多皮尔逊国际机场", country: "加拿大" },
+            { code: "MMMX", name: "墨西哥城国际机场", country: "墨西哥" },
+            { code: "SBGR", name: "圣保罗瓜鲁柳斯国际机场", country: "巴西" },
+            { code: "SAEZ", name: "布宜诺斯艾利斯埃塞萨国际机场", country: "阿根廷" },
+            { code: "YSSY", name: "悉尼金斯福德·史密斯国际机场", country: "澳大利亚" },
+            { code: "YMML", name: "墨尔本国际机场", country: "澳大利亚" },
+            { code: "NZAA", name: "奥克兰国际机场", country: "新西兰" },
+            { code: "YPPH", name: "珀斯国际机场", country: "澳大利亚" },
+            { code: "WIII", name: "雅加达苏加诺-哈达国际机场", country: "印度尼西亚" },
+            { code: "WMKK", name: "吉隆坡国际机场", country: "马来西亚" },
+            { code: "RPLL", name: "马尼拉尼诺伊·阿基诺国际机场", country: "菲律宾" },
+            { code: "WADD", name: "巴厘岛登巴萨国际机场", country: "印度尼西亚" }
+        ];
+        
+        // 提取所有国家
+        const countries = [...new Set(airports.map(airport => airport.country))].sort();
+        
+        // 获取DOM元素
+        const departureAirport = document.getElementById('departure-airport');
+        const arrivalAirport = document.getElementById('arrival-airport');
+        const drawBtn = document.getElementById('draw-btn');
+        const historyList = document.getElementById('history-list');
+        const departureCountrySelect = document.getElementById('departure-country');
+        const arrivalCountrySelect = document.getElementById('arrival-country');
+        
+        // 初始化国家选择下拉菜单
+        function initCountrySelects() {
+            // 添加"所有国家"选项
+            const allOptionDeparture = document.createElement('option');
+            allOptionDeparture.value = 'all';
+            allOptionDeparture.textContent = '所有国家';
+            departureCountrySelect.appendChild(allOptionDeparture);
+            
+            const allOptionArrival = document.createElement('option');
+            allOptionArrival.value = 'all';
+            allOptionArrival.textContent = '所有国家';
+            arrivalCountrySelect.appendChild(allOptionArrival);
+            
+            // 添加各个国家选项
+            countries.forEach(country => {
+                const optionDeparture = document.createElement('option');
+                optionDeparture.value = country;
+                optionDeparture.textContent = country;
+                departureCountrySelect.appendChild(optionDeparture);
+                
+                const optionArrival = document.createElement('option');
+                optionArrival.value = country;
+                optionArrival.textContent = country;
+                arrivalCountrySelect.appendChild(optionArrival);
+            });
+        }
+        
+        // 历史记录数组
+        let history = [];
+        
+        // 抽签函数
+        function drawRoute() {
+            // 获取用户选择的国家
+            const departureCountry = departureCountrySelect.value;
+            const arrivalCountry = arrivalCountrySelect.value;
+            
+            // 根据选择的国家筛选机场
+            let departureAirports = airports;
+            let arrivalAirports = airports;
+            
+            if (departureCountry !== 'all') {
+                departureAirports = airports.filter(airport => airport.country === departureCountry);
+            }
+            
+            if (arrivalCountry !== 'all') {
+                arrivalAirports = airports.filter(airport => airport.country === arrivalCountry);
+            }
+            
+            // 确保筛选后有机场可选
+            if (departureAirports.length === 0 || arrivalAirports.length === 0) {
+                alert('所选国家没有可用的机场，请选择其他国家或使用"所有国家"选项。');
+                return;
+            }
+            
+            // 随机选择两个不同的机场（如果来自同一个国家，确保不是同一个机场）
+            let departureIndex = Math.floor(Math.random() * departureAirports.length);
+            let arrivalIndex;
+            
+            if (departureCountry === arrivalCountry && departureAirports.length > 1) {
+                do {
+                    arrivalIndex = Math.floor(Math.random() * arrivalAirports.length);
+                } while (departureIndex === arrivalIndex);
+            } else {
+                arrivalIndex = Math.floor(Math.random() * arrivalAirports.length);
+            }
+            
+            const departure = departureAirports[departureIndex];
+            const arrival = arrivalAirports[arrivalIndex];
+            
+            // 添加动画效果更新机场显示
+            updateAirportDisplay(departureAirport, departure);
+            updateAirportDisplay(arrivalAirport, arrival);
+            
+            // 添加到历史记录
+            addToHistory(departure, arrival);
+        }
+        
+        // 更新机场显示
+        function updateAirportDisplay(element, airport) {
+            // 添加过渡动画
+            element.style.opacity = '0.5';
+            setTimeout(() => {
+                element.querySelector('.airport-code').textContent = airport.code;
+                element.querySelector('.airport-name').textContent = `${airport.name} (${airport.country})`;
+                element.style.opacity = '1';
+            }, 300);
+        }
+        
+        // 添加到历史记录
+        function addToHistory(departure, arrival) {
+            const timestamp = new Date().toLocaleTimeString();
+            const route = `${timestamp}: ${departure.code}(${departure.country}) → ${arrival.code}(${arrival.country})`;
+            history.unshift(route);
+            
+            // 限制历史记录数量
+            if (history.length > 10) {
+                history.pop();
+            }
+            
+            // 更新历史记录显示
+            updateHistoryDisplay();
+        }
+        
+        // 更新历史记录显示
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = item;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // 添加点击事件监听器
+        drawBtn.addEventListener('click', drawRoute);
+        
+        // 用户登录相关变量
+        let currentUser = null;
+        
+        // 预设的登录凭证（实际应用中应该从服务器获取）
+        const validCredentials = {
+            "admin": "admin123",
+            "user1": "user123"
+        };
+        
+        // 获取模态框元素
+        const loginModal = document.getElementById('login-modal');
+        const addAirportModal = document.getElementById('add-airport-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const addAirportBtn = document.getElementById('add-airport-btn');
+        const loginClose = loginModal.querySelector('.close');
+        const addAirportClose = addAirportModal.querySelector('.close');
+        const loginSubmit = document.getElementById('login-submit');
+        const addAirportSubmit = document.getElementById('add-airport-submit');
+        const loginMessage = document.getElementById('login-message');
+        const addAirportMessage = document.getElementById('add-airport-message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const newAirportCodeInput = document.getElementById('new-airport-code');
+        const newAirportNameInput = document.getElementById('new-airport-name');
+        const newAirportCountryInput = document.getElementById('new-airport-country');
+        
+        // 初始化函数
+        function initializeApp() {
+            initCountrySelects();
+            checkLoginStatus();
+            showPortInformation();
+        }
+        
+        // 显示端口信息
+        function showPortInformation() {
+            const portInfoElement = document.getElementById('port-info');
+            const currentUrl = window.location.href;
+            const url = new URL(currentUrl);
+            
+            // 获取端口号
+            let port = url.port;
+            
+            // 如果是默认端口(80或443)，浏览器通常不会显示
+            if (!port) {
+                if (url.protocol === 'https:') {
+                    port = '443 (HTTPS默认端口)';
+                } else if (url.protocol === 'http:') {
+                    port = '80 (HTTP默认端口)';
+                } else {
+                    port = '本地文件模式 (无端口)';
+                }
+            }
+            
+            portInfoElement.textContent = `当前URL: ${url.hostname} | 端口: ${port}`;
+        }
+        
+        // 检查登录状态
+        function checkLoginStatus() {
+            // 从localStorage获取登录状态
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                updateUIForLoggedInUser();
+            }
+        }
+        
+        // 更新登录用户的UI
+        function updateUIForLoggedInUser() {
+            loginBtn.textContent = `已登录(${currentUser})`;
+            loginBtn.disabled = true;
+            loginBtn.style.backgroundColor = '#ccc';
+            loginBtn.style.backgroundImage = 'none';
+            addAirportBtn.style.display = 'block';
+        }
+        
+        // 登录函数
+        function login(username, password) {
+            if (validCredentials[username] && validCredentials[username] === password) {
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                updateUIForLoggedInUser();
+                loginModal.style.display = 'none';
+                showMessage(loginMessage, '登录成功！', 'success');
+                return true;
+            } else {
+                showMessage(loginMessage, '用户名或密码错误！', 'error');
+                return false;
+            }
+        }
+        
+        // 添加机场函数
+        function addAirport(code, name, country) {
+            // 检查机场代码是否已存在
+            const codeExists = airports.some(airport => airport.code.toUpperCase() === code.toUpperCase());
+            if (codeExists) {
+                showMessage(addAirportMessage, '该机场代码已存在！', 'error');
+                return false;
+            }
+            
+            // 检查输入是否为空
+            if (!code || !name || !country) {
+                showMessage(addAirportMessage, '所有字段都不能为空！', 'error');
+                return false;
+            }
+            
+            // 检查机场代码长度是否为4
+            if (code.length !== 4) {
+                showMessage(addAirportMessage, '机场代码必须为4个字符！', 'error');
+                return false;
+            }
+            
+            // 添加新机场
+            airports.push({
+                code: code.toUpperCase(),
+                name: name,
+                country: country
+            });
+            
+            // 更新国家列表
+            updateCountries();
+            
+            // 关闭模态框并清空输入
+            addAirportModal.style.display = 'none';
+            clearAddAirportForm();
+            showMessage(addAirportMessage, '机场添加成功！', 'success');
+            return true;
+        }
+        
+        // 更新国家列表
+        function updateCountries() {
+            // 重新提取所有国家
+            const newCountries = [...new Set(airports.map(airport => airport.country))].sort();
+            
+            // 如果有新的国家，更新下拉菜单
+            if (newCountries.length > countries.length) {
+                const addedCountries = newCountries.filter(country => !countries.includes(country));
+                addedCountries.forEach(country => {
+                    countries.push(country);
+                    
+                    const optionDeparture = document.createElement('option');
+                    optionDeparture.value = country;
+                    optionDeparture.textContent = country;
+                    departureCountrySelect.appendChild(optionDeparture);
+                    
+                    const optionArrival = document.createElement('option');
+                    optionArrival.value = country;
+                    optionArrival.textContent = country;
+                    arrivalCountrySelect.appendChild(optionArrival);
+                });
+            }
+        }
+        
+        // 显示消息
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+            
+            // 3秒后隐藏消息
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 清空添加机场表单
+        function clearAddAirportForm() {
+            newAirportCodeInput.value = '';
+            newAirportNameInput.value = '';
+            newAirportCountryInput.value = '';
+        }
+        
+        // 添加事件监听器
+        function addEventListeners() {
+            // 登录按钮点击事件
+            loginBtn.addEventListener('click', () => {
+                loginModal.style.display = 'block';
+            });
+            
+            // 添加机场按钮点击事件
+            addAirportBtn.addEventListener('click', () => {
+                if (currentUser) {
+                    addAirportModal.style.display = 'block';
+                } else {
+                    alert('请先登录！');
+                }
+            });
+            
+            // 关闭模态框事件
+            loginClose.addEventListener('click', () => {
+                loginModal.style.display = 'none';
+                loginMessage.style.display = 'none';
+            });
+            
+            addAirportClose.addEventListener('click', () => {
+                addAirportModal.style.display = 'none';
+                addAirportMessage.style.display = 'none';
+            });
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (event) => {
+                if (event.target === loginModal) {
+                    loginModal.style.display = 'none';
+                    loginMessage.style.display = 'none';
+                }
+                if (event.target === addAirportModal) {
+                    addAirportModal.style.display = 'none';
+                    addAirportMessage.style.display = 'none';
+                }
+            });
+            
+            // 登录提交事件
+            loginSubmit.addEventListener('click', () => {
+                login(usernameInput.value, passwordInput.value);
+            });
+            
+            // 添加机场提交事件
+            addAirportSubmit.addEventListener('click', () => {
+                addAirport(newAirportCodeInput.value, newAirportNameInput.value, newAirportCountryInput.value);
+            });
+            
+            // 抽签按钮点击事件
+            drawBtn.addEventListener('click', drawRoute);
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            initializeApp();
+            addEventListeners();
+        });
+    </script>
+</body>
+</html>
