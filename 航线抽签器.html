@@ -121,34 +121,93 @@
             transform: translateY(-1px);
         }
         
+        /* 已添加机场列表样式 */
+        .airports-list-container {
+            margin-top: 30px;
+        }
+        
+        .airports-list-container h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .airports-list {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .airport-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .airport-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .airport-item-code {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+        
+        .airport-item-name {
+            font-size: 0.9rem;
+            margin-top: 3px;
+        }
+        
+        .airport-item-country {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        
+        /* 历史记录样式 */
         .history {
             margin-top: 30px;
-            text-align: left;
         }
         
         .history h3 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
         }
         
         .history-list {
-            max-height: 150px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
             overflow-y: auto;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
         }
         
         .history-item {
             padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-            color: #4a5568;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 0.9rem;
         }
         
         .history-item:last-child {
             border-bottom: none;
+        }
+        
+        /* 归属提示样式 */
+        .owner-info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-align: center;
+            font-style: italic;
+            color: #000000;
+            font-size: 0.9rem;
         }
         
         /* 国家选择样式 */
@@ -275,6 +334,12 @@
             border: 1px solid #f5c6cb;
         }
         
+        .message.warning {
+            background-color: rgba(255, 165, 0, 0.1);
+            color: #facc15;
+            border: 1px solid #facc15;
+        }
+        
         .selection-group {
             display: flex;
             flex-direction: column;
@@ -342,10 +407,7 @@
     <div class="container">
         <h1>航线抽签器</h1>
         
-        <div class="header-actions">
-            <button id="login-btn" class="btn-small">登录</button>
-            <button id="add-airport-btn" class="btn-small" style="display: none;">添加机场</button>
-        </div>
+        <!-- 移除了登录和添加机场功能 -->
         
         <div class="country-selection">
             <div class="selection-group">
@@ -355,6 +417,109 @@
             <div class="selection-group">
                 <label for="arrival-country">选择降落机场国家：</label>
                 <select id="arrival-country" class="country-select"></select>
+            </div>
+        </div>
+        
+        <!-- 机型选择 -->
+        <div style="margin-bottom: 20px;">
+            <div class="selection-group">
+                <label for="aircraft-type">选择机型：</label>
+                <select id="aircraft-type" class="country-select">
+                    <!-- 波音737系列 -->
+                    <option value="B737-300">波音737-300</option>
+                    <option value="B737-400">波音737-400</option>
+                    <option value="B737-500">波音737-500</option>
+                    <option value="B737-600">波音737-600</option>
+                    <option value="B737-700">波音737-700</option>
+                    <option value="B737-800">波音737-800</option>
+                    <option value="B737-900">波音737-900</option>
+                    <option value="B737-900ER">波音737-900ER</option>
+                    <option value="B737-MAX7">波音737 MAX 7</option>
+                    <option value="B737-MAX8">波音737 MAX 8</option>
+                    <option value="B737-MAX9">波音737 MAX 9</option>
+                    <option value="B737-MAX10">波音737 MAX 10</option>
+                    
+                    <!-- 波音747系列 -->
+                    <option value="B747-200">波音747-200</option>
+                    <option value="B747-300">波音747-300</option>
+                    <option value="B747-400">波音747-400</option>
+                    <option value="B747-400ER">波音747-400ER</option>
+                    <option value="B747-8">波音747-8</option>
+                    
+                    <!-- 波音757系列 -->
+                    <option value="B757-200">波音757-200</option>
+                    <option value="B757-300">波音757-300</option>
+                    
+                    <!-- 波音767系列 -->
+                    <option value="B767-200">波音767-200</option>
+                    <option value="B767-300">波音767-300</option>
+                    <option value="B767-400ER">波音767-400ER</option>
+                    
+                    <!-- 波音777系列 -->
+                    <option value="B777-200">波音777-200</option>
+                    <option value="B777-200ER">波音777-200ER</option>
+                    <option value="B777-300">波音777-300</option>
+                    <option value="B777-300ER">波音777-300ER</option>
+                    <option value="B777-F">波音777F (货机)</option>
+                    <option value="B777X">波音777X</option>
+                    
+                    <!-- 波音787系列 -->
+                    <option value="B787-8">波音787-8</option>
+                    <option value="B787-9">波音787-9</option>
+                    <option value="B787-10">波音787-10</option>
+                    
+                    <!-- 空客A300系列 -->
+                    <option value="A300B4">空客A300B4</option>
+                    <option value="A300-600">空客A300-600</option>
+                    
+                    <!-- 空客A310系列 -->
+                    <option value="A310-200">空客A310-200</option>
+                    <option value="A310-300">空客A310-300</option>
+                    
+                    <!-- 空客A320系列 -->
+                    <option value="A318">空客A318</option>
+                    <option value="A319">空客A319</option>
+                    <option value="A320">空客A320</option>
+                    <option value="A320neo">空客A320neo</option>
+                    <option value="A321">空客A321</option>
+                    <option value="A321neo">空客A321neo</option>
+                    
+                    <!-- 空客A330系列 -->
+                    <option value="A330-200">空客A330-200</option>
+                    <option value="A330-300">空客A330-300</option>
+                    <option value="A330neo-800">空客A330neo-800</option>
+                    <option value="A330neo-900">空客A330neo-900</option>
+                    
+                    <!-- 空客A340系列 -->
+                    <option value="A340-200">空客A340-200</option>
+                    <option value="A340-300">空客A340-300</option>
+                    <option value="A340-500">空客A340-500</option>
+                    <option value="A340-600">空客A340-600</option>
+                    
+                    <!-- 空客A350系列 -->
+                    <option value="A350-800">空客A350-800</option>
+                    <option value="A350-900">空客A350-900</option>
+                    <option value="A350-1000">空客A350-1000</option>
+                    
+                    <!-- 空客A380系列 -->
+                    <option value="A380-800">空客A380-800</option>
+                    
+                    <!-- 其他制造商 -->
+                    <option value="MD80">麦道MD-80</option>
+                    <option value="MD90">麦道MD-90</option>
+                    <option value="MD11">麦道MD-11</option>
+                    <option value="E170">巴西航空E170</option>
+                    <option value="E175">巴西航空E175</option>
+                    <option value="E190">巴西航空E190</option>
+                    <option value="E195">巴西航空E195</option>
+                    <option value="CRJ700">庞巴迪CRJ700</option>
+                    <option value="CRJ900">庞巴迪CRJ900</option>
+                    <option value="CRJ1000">庞巴迪CRJ1000</option>
+                    <option value="CS100">庞巴迪CS100 (A220-100)</option>
+                    <option value="CS300">庞巴迪CS300 (A220-300)</option>
+                    <option value="ATR42">ATR 42</option>
+                    <option value="ATR72">ATR 72</option>
+                </select>
             </div>
         </div>
         
@@ -382,51 +547,18 @@
                 <!-- 历史记录将在这里显示 -->
             </div>
         </div>
-    </div>
-
-    <!-- 登录模态框 -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>用户登录</h2>
-            <div class="form-group">
-                <label for="username">用户名：</label>
-                <input type="text" id="username" placeholder="请输入用户名">
-            </div>
-            <div class="form-group">
-                <label for="password">密码：</label>
-                <input type="password" id="password" placeholder="请输入密码">
-            </div>
-            <button id="login-submit" class="btn">登录</button>
-            <div id="login-message" class="message"></div>
+        
+        <!-- 归属提示 -->
+        <div class="owner-info">
+            此抽取器为虚拟LMJ（长征）集团所有
         </div>
     </div>
 
-    <!-- 添加机场模态框 -->
-    <div id="add-airport-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>添加新机场</h2>
-            <div class="form-group">
-                <label for="new-airport-code">机场四字代码：</label>
-                <input type="text" id="new-airport-code" placeholder="例如：ZBAA">
-            </div>
-            <div class="form-group">
-                <label for="new-airport-name">机场名称：</label>
-                <input type="text" id="new-airport-name" placeholder="例如：北京首都国际机场">
-            </div>
-            <div class="form-group">
-                <label for="new-airport-country">所在国家：</label>
-                <input type="text" id="new-airport-country" placeholder="例如：中国">
-            </div>
-            <button id="add-airport-submit" class="btn">添加</button>
-            <div id="add-airport-message" class="message"></div>
-        </div>
-    </div>
+    <!-- 移除了登录和添加机场模态框 -->
 
     <script>
-        // 世界主要机场数据（四字代码、名称、国家）
-        const airports = [
+        // 默认机场数据
+        const defaultAirports = [
             { code: "ZBAA", name: "北京首都国际机场", country: "中国" },
             { code: "ZSPD", name: "上海浦东国际机场", country: "中国" },
             { code: "ZGGG", name: "广州白云国际机场", country: "中国" },
@@ -468,9 +600,205 @@
             { code: "RPLL", name: "马尼拉尼诺伊·阿基诺国际机场", country: "菲律宾" },
             { code: "WADD", name: "巴厘岛登巴萨国际机场", country: "印度尼西亚" }
         ];
+
+        // 从localStorage加载机场数据（简易数据库实现）
+        let airports = [];
         
-        // 提取所有国家
-        const countries = [...new Set(airports.map(airport => airport.country))].sort();
+        // 从localStorage加载机场数据
+        function loadAirportsFromStorage() {
+            const storedAirports = localStorage.getItem('airports');
+            if (storedAirports) {
+                try {
+                    airports = JSON.parse(storedAirports);
+                    console.log('成功从本地数据库加载', airports.length, '个机场数据');
+                } catch (error) {
+                    console.error('加载机场数据失败，使用默认数据:', error);
+                    airports = [...defaultAirports];
+                    saveAirportsToStorage();
+                }
+            } else {
+                // 如果没有存储的数据，使用默认数据
+                airports = [...defaultAirports];
+                saveAirportsToStorage();
+            }
+        }
+        
+        // 保存机场数据到localStorage
+        function saveAirportsToStorage() {
+            try {
+                localStorage.setItem('airports', JSON.stringify(airports));
+                console.log('机场数据已保存到本地数据库');
+            } catch (error) {
+                console.error('保存机场数据失败:', error);
+            }
+        }
+        
+        // 批量导入机场数据函数
+        function importAirports(airportList) {
+            let importedCount = 0;
+            
+            airportList.forEach(newAirport => {
+                // 检查机场是否已存在（不区分大小写）
+                const exists = airports.some(airport => 
+                    airport.code.toUpperCase() === newAirport.code.toUpperCase()
+                );
+                
+                if (!exists) {
+                    // 补充完整的机场数据格式
+                    const fullAirportData = {
+                        code: newAirport.code.toUpperCase(),
+                        name: newAirport.name,
+                        country: newAirport.country || "中国", // 默认国家为中国
+                        addedBy: "system",
+                        addedAt: new Date().toISOString()
+                    };
+                    
+                    airports.push(fullAirportData);
+                    importedCount++;
+                }
+            });
+            
+            if (importedCount > 0) {
+                // 保存更新后的数据
+                saveAirportsToStorage();
+                // 更新国家列表
+                updateCountries();
+                console.log(`成功导入 ${importedCount} 个新机场`);
+            }
+            
+            return importedCount;
+        }
+        
+        // 预定义的机场数据（用户提供的中国机场列表）
+        const additionalAirports = [
+            { code: "ZBNY", name: "北京南苑机场", country: "中国" },
+            { code: "ZBAA", name: "北京首都国际机场", country: "中国" },
+            { code: "ZBTJ", name: "天津滨海国际机场", country: "中国" },
+            { code: "ZBZJ", name: "张家口宁远机场", country: "中国" },
+            { code: "ZBHD", name: "邯郸机场", country: "中国" },
+            { code: "ZBSH", name: "秦皇岛山海关机场", country: "中国" },
+            { code: "ZBTS", name: "唐山三女河机场", country: "中国" },
+            { code: "ZBXT", name: "邢台褡裢机场", country: "中国" },
+            { code: "ZBSJ", name: "石家庄正定国际机场", country: "中国" },
+            { code: "ZBYN", name: "太原武宿国际机场", country: "中国" },
+            { code: "ZBLL", name: "吕梁机场", country: "中国" },
+            { code: "ZBCZ", name: "长治王村机场", country: "中国" },
+            { code: "ZBDT", name: "大同云冈机场", country: "中国" },
+            { code: "ZBYC", name: "运城机场", country: "中国" },
+            { code: "ZBOW", name: "包头二里半机场", country: "中国" },
+            { code: "ZBCF", name: "赤峰玉龙机场", country: "中国" },
+            { code: "ZBDS", name: "鄂尔多斯伊金霍洛机场", country: "中国" },
+            { code: "ZBER", name: "二连浩特赛乌苏机场", country: "中国" },
+            { code: "ZBMZ", name: "满洲里西郊机场", country: "中国" },
+            { code: "ZBUH", name: "乌海机场", country: "中国" },
+            { code: "ZBES", name: "阿尔山伊尔施机场", country: "中国" },
+            { code: "ZBYZ", name: "巴彦淖尔天吉泰机场", country: "中国" },
+            { code: "ZBHH", name: "呼和浩特白塔国际机场", country: "中国" },
+            { code: "ZBLA", name: "呼伦贝尔海拉尔机场", country: "中国" },
+            { code: "ZSSS", name: "上海虹桥国际机场", country: "中国" },
+            { code: "ZSPD", name: "上海浦东国际机场", country: "中国" }
+        ];
+        
+        // 初始化国家数组（将在initializeApp中赋值）
+        let countries = [];
+        
+        // 机型数据（包含巡航速度，单位：公里/小时）
+        const aircraftTypes = {
+            // 波音737系列
+            'B737-300': { name: '波音737-300', cruiseSpeed: 828, range: 4175 },
+            'B737-400': { name: '波音737-400', cruiseSpeed: 828, range: 4175 },
+            'B737-500': { name: '波音737-500', cruiseSpeed: 828, range: 3900 },
+            'B737-600': { name: '波音737-600', cruiseSpeed: 828, range: 5648 },
+            'B737-700': { name: '波音737-700', cruiseSpeed: 828, range: 6038 },
+            'B737-800': { name: '波音737-800', cruiseSpeed: 840, range: 5665 },
+            'B737-900': { name: '波音737-900', cruiseSpeed: 828, range: 5925 },
+            'B737-900ER': { name: '波音737-900ER', cruiseSpeed: 828, range: 6570 },
+            'B737-MAX7': { name: '波音737 MAX 7', cruiseSpeed: 840, range: 6570 },
+            'B737-MAX8': { name: '波音737 MAX 8', cruiseSpeed: 840, range: 6570 },
+            'B737-MAX9': { name: '波音737 MAX 9', cruiseSpeed: 840, range: 6570 },
+            'B737-MAX10': { name: '波音737 MAX 10', cruiseSpeed: 840, range: 6300 },
+            
+            // 波音747系列
+            'B747-200': { name: '波音747-200', cruiseSpeed: 935, range: 9200 },
+            'B747-300': { name: '波音747-300', cruiseSpeed: 935, range: 10800 },
+            'B747-400': { name: '波音747-400', cruiseSpeed: 917, range: 14205 },
+            'B747-400ER': { name: '波音747-400ER', cruiseSpeed: 917, range: 14815 },
+            'B747-8': { name: '波音747-8', cruiseSpeed: 917, range: 14815 },
+            
+            // 波音757系列
+            'B757-200': { name: '波音757-200', cruiseSpeed: 850, range: 7275 },
+            'B757-300': { name: '波音757-300', cruiseSpeed: 850, range: 6421 },
+            
+            // 波音767系列
+            'B767-200': { name: '波音767-200', cruiseSpeed: 851, range: 9400 },
+            'B767-300': { name: '波音767-300', cruiseSpeed: 851, range: 10600 },
+            'B767-400ER': { name: '波音767-400ER', cruiseSpeed: 851, range: 10415 },
+            
+            // 波音777系列
+            'B777-200': { name: '波音777-200', cruiseSpeed: 905, range: 9695 },
+            'B777-200ER': { name: '波音777-200ER', cruiseSpeed: 905, range: 14260 },
+            'B777-300': { name: '波音777-300', cruiseSpeed: 905, range: 11165 },
+            'B777-300ER': { name: '波音777-300ER', cruiseSpeed: 905, range: 14685 },
+            'B777-F': { name: '波音777F (货机)', cruiseSpeed: 905, range: 9065 },
+            'B777X': { name: '波音777X', cruiseSpeed: 905, range: 16110 },
+            
+            // 波音787系列
+            'B787-8': { name: '波音787-8', cruiseSpeed: 903, range: 13620 },
+            'B787-9': { name: '波音787-9', cruiseSpeed: 903, range: 14140 },
+            'B787-10': { name: '波音787-10', cruiseSpeed: 903, range: 11910 },
+            
+            // 空客A300系列
+            'A300B4': { name: '空客A300B4', cruiseSpeed: 890, range: 6350 },
+            'A300-600': { name: '空客A300-600', cruiseSpeed: 890, range: 7400 },
+            
+            // 空客A310系列
+            'A310-200': { name: '空客A310-200', cruiseSpeed: 890, range: 8300 },
+            'A310-300': { name: '空客A310-300', cruiseSpeed: 890, range: 9600 },
+            
+            // 空客A320系列
+            'A318': { name: '空客A318', cruiseSpeed: 828, range: 6000 },
+            'A319': { name: '空客A319', cruiseSpeed: 828, range: 6850 },
+            'A320': { name: '空客A320', cruiseSpeed: 828, range: 5700 },
+            'A320neo': { name: '空客A320neo', cruiseSpeed: 840, range: 6300 },
+            'A321': { name: '空客A321', cruiseSpeed: 828, range: 5600 },
+            'A321neo': { name: '空客A321neo', cruiseSpeed: 840, range: 7400 },
+            
+            // 空客A330系列
+            'A330-200': { name: '空客A330-200', cruiseSpeed: 871, range: 13450 },
+            'A330-300': { name: '空客A330-300', cruiseSpeed: 871, range: 11750 },
+            'A330neo-800': { name: '空客A330neo-800', cruiseSpeed: 871, range: 15094 },
+            'A330neo-900': { name: '空客A330neo-900', cruiseSpeed: 871, range: 13334 },
+            
+            // 空客A340系列
+            'A340-200': { name: '空客A340-200', cruiseSpeed: 885, range: 14800 },
+            'A340-300': { name: '空客A340-300', cruiseSpeed: 885, range: 13500 },
+            'A340-500': { name: '空客A340-500', cruiseSpeed: 885, range: 16670 },
+            'A340-600': { name: '空客A340-600', cruiseSpeed: 885, range: 14630 },
+            
+            // 空客A350系列
+            'A350-800': { name: '空客A350-800', cruiseSpeed: 871, range: 15100 },
+            'A350-900': { name: '空客A350-900', cruiseSpeed: 871, range: 15000 },
+            'A350-1000': { name: '空客A350-1000', cruiseSpeed: 871, range: 14800 },
+            
+            // 空客A380系列
+            'A380-800': { name: '空客A380-800', cruiseSpeed: 907, range: 15200 },
+            
+            // 其他制造商
+            'MD80': { name: '麦道MD-80', cruiseSpeed: 811, range: 3700 },
+            'MD90': { name: '麦道MD-90', cruiseSpeed: 811, range: 3800 },
+            'MD11': { name: '麦道MD-11', cruiseSpeed: 885, range: 12480 },
+            'E170': { name: '巴西航空E170', cruiseSpeed: 829, range: 3334 },
+            'E175': { name: '巴西航空E175', cruiseSpeed: 829, range: 3334 },
+            'E190': { name: '巴西航空E190', cruiseSpeed: 829, range: 4448 },
+            'E195': { name: '巴西航空E195', cruiseSpeed: 829, range: 4448 },
+            'CRJ700': { name: '庞巴迪CRJ700', cruiseSpeed: 829, range: 3128 },
+            'CRJ900': { name: '庞巴迪CRJ900', cruiseSpeed: 829, range: 2956 },
+            'CRJ1000': { name: '庞巴迪CRJ1000', cruiseSpeed: 829, range: 2956 },
+            'CS100': { name: '庞巴迪CS100 (A220-100)', cruiseSpeed: 871, range: 5900 },
+            'CS300': { name: '庞巴迪CS300 (A220-300)', cruiseSpeed: 871, range: 6200 },
+            'ATR42': { name: 'ATR 42', cruiseSpeed: 490, range: 1550 },
+            'ATR72': { name: 'ATR 72', cruiseSpeed: 510, range: 1550 }
+        };
         
         // 获取DOM元素
         const departureAirport = document.getElementById('departure-airport');
@@ -479,6 +807,13 @@
         const historyList = document.getElementById('history-list');
         const departureCountrySelect = document.getElementById('departure-country');
         const arrivalCountrySelect = document.getElementById('arrival-country');
+        const aircraftTypeSelect = document.getElementById('aircraft-type');
+        const flightTimeDisplay = document.createElement('div');
+        flightTimeDisplay.className = 'flight-time';
+        flightTimeDisplay.style.marginTop = '20px';
+        flightTimeDisplay.style.fontSize = '1.1rem';
+        flightTimeDisplay.style.color = '#667eea';
+        document.querySelector('.container').insertBefore(flightTimeDisplay, drawBtn.nextSibling);
         
         // 初始化国家选择下拉菜单
         function initCountrySelects() {
@@ -510,11 +845,78 @@
         // 历史记录数组
         let history = [];
         
+        // 估算两个机场之间的距离（公里）
+        function estimateDistance(departure, arrival) {
+            // 如果是同一个国家的机场，假设平均距离为500公里
+            if (departure.country === arrival.country) {
+                return 500;
+            }
+            
+            // 区域内国家之间的距离（亚洲内部、欧洲内部等）
+            const regionalPairs = [
+                { region1: '中国', region2: '日本', distance: 2500 },
+                { region1: '中国', region2: '韩国', distance: 1000 },
+                { region1: '中国', region2: '泰国', distance: 3000 },
+                { region1: '中国', region2: '新加坡', distance: 4000 },
+                { region1: '日本', region2: '韩国', distance: 1000 },
+                { region1: '英国', region2: '法国', distance: 500 },
+                { region1: '英国', region2: '德国', distance: 800 },
+                { region1: '法国', region2: '德国', distance: 600 },
+                { region1: '法国', region2: '西班牙', distance: 800 },
+                { region1: '美国', region2: '加拿大', distance: 1500 }
+            ];
+            
+            // 查找是否有预定义的区域距离
+            for (const pair of regionalPairs) {
+                if ((departure.country === pair.region1 && arrival.country === pair.region2) ||
+                    (departure.country === pair.region2 && arrival.country === pair.region1)) {
+                    return pair.distance;
+                }
+            }
+            
+            // 跨洲际的距离
+            const intercontinentalPairs = [
+                { continent1: ['中国', '日本', '韩国', '泰国', '新加坡', '印度'], continent2: ['英国', '法国', '德国', '荷兰', '西班牙', '意大利', '土耳其'], distance: 9000 },
+                { continent1: ['中国', '日本', '韩国', '泰国', '新加坡', '印度'], continent2: ['美国', '加拿大'], distance: 11000 },
+                { continent1: ['英国', '法国', '德国', '荷兰', '西班牙', '意大利', '土耳其'], continent2: ['美国', '加拿大'], distance: 6500 },
+                { continent1: ['中国', '日本', '韩国', '泰国', '新加坡', '印度'], continent2: ['澳大利亚', '新西兰'], distance: 8500 },
+                { continent1: ['美国', '加拿大'], continent2: ['澳大利亚', '新西兰'], distance: 12000 }
+            ];
+            
+            // 查找跨洲际距离
+            for (const pair of intercontinentalPairs) {
+                const isInContinent1 = pair.continent1.includes(departure.country) || pair.continent1.includes(arrival.country);
+                const isInContinent2 = pair.continent2.includes(departure.country) || pair.continent2.includes(arrival.country);
+                
+                if (isInContinent1 && isInContinent2 && departure.country !== arrival.country) {
+                    return pair.distance;
+                }
+            }
+            
+            // 默认跨区域距离
+            return 7000;
+        }
+        
+        // 计算飞行时间
+        function calculateFlightTime(departure, arrival, aircraftType) {
+            const distance = estimateDistance(departure, arrival);
+            const speed = aircraftTypes[aircraftType].cruiseSpeed;
+            const flightTime = distance / speed;
+            
+            // 格式化时间显示
+            const hours = Math.floor(flightTime);
+            const minutes = Math.round((flightTime - hours) * 60);
+            
+            return { hours, minutes, distance };
+        }
+        
         // 抽签函数
         function drawRoute() {
             // 获取用户选择的国家
             const departureCountry = departureCountrySelect.value;
             const arrivalCountry = arrivalCountrySelect.value;
+            // 如果用户没有选择机型或选择为空，默认使用波音737-300
+            const aircraftType = aircraftTypeSelect.value || 'B737-300';
             
             // 根据选择的国家筛选机场
             let departureAirports = airports;
@@ -534,27 +936,53 @@
                 return;
             }
             
-            // 随机选择两个不同的机场（如果来自同一个国家，确保不是同一个机场）
-            let departureIndex = Math.floor(Math.random() * departureAirports.length);
-            let arrivalIndex;
+            let departure, arrival, flightTimeInfo;
+            let attempts = 0;
+            const maxAttempts = 100; // 设置最大尝试次数以避免无限循环
             
-            if (departureCountry === arrivalCountry && departureAirports.length > 1) {
-                do {
+            // 循环直到找到飞行时间不小于1小时的航线，或者达到最大尝试次数
+            do {
+                // 随机选择两个不同的机场（如果来自同一个国家，确保不是同一个机场）
+                let departureIndex = Math.floor(Math.random() * departureAirports.length);
+                let arrivalIndex;
+                
+                if (departureCountry === arrivalCountry && departureAirports.length > 1) {
+                    do {
+                        arrivalIndex = Math.floor(Math.random() * arrivalAirports.length);
+                    } while (departureIndex === arrivalIndex);
+                } else {
                     arrivalIndex = Math.floor(Math.random() * arrivalAirports.length);
-                } while (departureIndex === arrivalIndex);
-            } else {
-                arrivalIndex = Math.floor(Math.random() * arrivalAirports.length);
-            }
+                }
+                
+                departure = departureAirports[departureIndex];
+                arrival = arrivalAirports[arrivalIndex];
+                
+                // 计算飞行时间
+                flightTimeInfo = calculateFlightTime(departure, arrival, aircraftType);
+                
+                attempts++;
+            } while ((flightTimeInfo.hours < 1 && flightTimeInfo.minutes < 60) && attempts < maxAttempts);
             
-            const departure = departureAirports[departureIndex];
-            const arrival = arrivalAirports[arrivalIndex];
+            // 如果达到最大尝试次数但仍未找到合适的航线，提示用户
+            if (attempts >= maxAttempts) {
+                alert('当前选择条件下难以找到飞行时间不小于1小时的航线，请尝试调整选择条件。');
+                return;
+            }
             
             // 添加动画效果更新机场显示
             updateAirportDisplay(departureAirport, departure);
             updateAirportDisplay(arrivalAirport, arrival);
             
+            // 显示飞行时间
+            displayFlightTime(flightTimeInfo, aircraftType);
+            
             // 添加到历史记录
-            addToHistory(departure, arrival);
+            addToHistory(departure, arrival, aircraftType, flightTimeInfo);
+        }
+        
+        // 显示飞行时间
+        function displayFlightTime(flightTimeInfo, aircraftType) {
+            flightTimeDisplay.textContent = `${aircraftTypes[aircraftType].name} 预计飞行时间: ${flightTimeInfo.hours}小时${flightTimeInfo.minutes}分钟 (距离约${flightTimeInfo.distance}公里)`;
         }
         
         // 更新机场显示
@@ -569,9 +997,9 @@
         }
         
         // 添加到历史记录
-        function addToHistory(departure, arrival) {
+        function addToHistory(departure, arrival, aircraftType, flightTimeInfo) {
             const timestamp = new Date().toLocaleTimeString();
-            const route = `${timestamp}: ${departure.code}(${departure.country}) → ${arrival.code}(${arrival.country})`;
+            const route = `${timestamp}: ${departure.code}(${departure.country}) → ${arrival.code}(${arrival.country}) [${aircraftTypes[aircraftType].name}: ${flightTimeInfo.hours}h${flightTimeInfo.minutes}m]`;
             history.unshift(route);
             
             // 限制历史记录数量
@@ -597,202 +1025,25 @@
         // 添加点击事件监听器
         drawBtn.addEventListener('click', drawRoute);
         
-        // 用户登录相关变量
-        let currentUser = null;
-        
-        // 预设的登录凭证（实际应用中应该从服务器获取）
-        const validCredentials = {
-            "admin": "admin123",
-            "user1": "user123"
-        };
-        
-        // 获取模态框元素
-        const loginModal = document.getElementById('login-modal');
-        const addAirportModal = document.getElementById('add-airport-modal');
-        const loginBtn = document.getElementById('login-btn');
-        const addAirportBtn = document.getElementById('add-airport-btn');
-        const loginClose = loginModal.querySelector('.close');
-        const addAirportClose = addAirportModal.querySelector('.close');
-        const loginSubmit = document.getElementById('login-submit');
-        const addAirportSubmit = document.getElementById('add-airport-submit');
-        const loginMessage = document.getElementById('login-message');
-        const addAirportMessage = document.getElementById('add-airport-message');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const newAirportCodeInput = document.getElementById('new-airport-code');
-        const newAirportNameInput = document.getElementById('new-airport-name');
-        const newAirportCountryInput = document.getElementById('new-airport-country');
+        // 移除了登录相关变量和模态框元素引用
         
         // 初始化函数
         function initializeApp() {
+            // 首先从本地数据库加载机场数据
+            loadAirportsFromStorage();
+            // 导入额外的机场数据（用户提供的中国机场列表）
+            const importedCount = importAirports(additionalAirports);
+            if (importedCount > 0) {
+                console.log(`应用启动时导入了 ${importedCount} 个新机场`);
+            }
+            // 提取所有国家
+            countries = [...new Set(airports.map(airport => airport.country))].sort();
+            // 初始化国家选择下拉菜单
             initCountrySelects();
-            checkLoginStatus();
-        }
-        
-        // 检查登录状态
-        function checkLoginStatus() {
-            // 从localStorage获取登录状态
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = savedUser;
-                updateUIForLoggedInUser();
-            }
-        }
-        
-        // 更新登录用户的UI
-        function updateUIForLoggedInUser() {
-            loginBtn.textContent = `已登录(${currentUser})`;
-            loginBtn.disabled = true;
-            loginBtn.style.backgroundColor = '#ccc';
-            loginBtn.style.backgroundImage = 'none';
-            addAirportBtn.style.display = 'block';
-        }
-        
-        // 登录函数
-        function login(username, password) {
-            if (validCredentials[username] && validCredentials[username] === password) {
-                currentUser = username;
-                localStorage.setItem('currentUser', username);
-                updateUIForLoggedInUser();
-                loginModal.style.display = 'none';
-                showMessage(loginMessage, '登录成功！', 'success');
-                return true;
-            } else {
-                showMessage(loginMessage, '用户名或密码错误！', 'error');
-                return false;
-            }
-        }
-        
-        // 添加机场函数
-        function addAirport(code, name, country) {
-            // 检查机场代码是否已存在
-            const codeExists = airports.some(airport => airport.code.toUpperCase() === code.toUpperCase());
-            if (codeExists) {
-                showMessage(addAirportMessage, '该机场代码已存在！', 'error');
-                return false;
-            }
-            
-            // 检查输入是否为空
-            if (!code || !name || !country) {
-                showMessage(addAirportMessage, '所有字段都不能为空！', 'error');
-                return false;
-            }
-            
-            // 检查机场代码长度是否为4
-            if (code.length !== 4) {
-                showMessage(addAirportMessage, '机场代码必须为4个字符！', 'error');
-                return false;
-            }
-            
-            // 添加新机场
-            airports.push({
-                code: code.toUpperCase(),
-                name: name,
-                country: country
-            });
-            
-            // 更新国家列表
-            updateCountries();
-            
-            // 关闭模态框并清空输入
-            addAirportModal.style.display = 'none';
-            clearAddAirportForm();
-            showMessage(addAirportMessage, '机场添加成功！', 'success');
-            return true;
-        }
-        
-        // 更新国家列表
-        function updateCountries() {
-            // 重新提取所有国家
-            const newCountries = [...new Set(airports.map(airport => airport.country))].sort();
-            
-            // 如果有新的国家，更新下拉菜单
-            if (newCountries.length > countries.length) {
-                const addedCountries = newCountries.filter(country => !countries.includes(country));
-                addedCountries.forEach(country => {
-                    countries.push(country);
-                    
-                    const optionDeparture = document.createElement('option');
-                    optionDeparture.value = country;
-                    optionDeparture.textContent = country;
-                    departureCountrySelect.appendChild(optionDeparture);
-                    
-                    const optionArrival = document.createElement('option');
-                    optionArrival.value = country;
-                    optionArrival.textContent = country;
-                    arrivalCountrySelect.appendChild(optionArrival);
-                });
-            }
-        }
-        
-        // 显示消息
-        function showMessage(element, text, type) {
-            element.textContent = text;
-            element.className = `message ${type}`;
-            element.style.display = 'block';
-            
-            // 3秒后隐藏消息
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 3000);
-        }
-        
-        // 清空添加机场表单
-        function clearAddAirportForm() {
-            newAirportCodeInput.value = '';
-            newAirportNameInput.value = '';
-            newAirportCountryInput.value = '';
         }
         
         // 添加事件监听器
         function addEventListeners() {
-            // 登录按钮点击事件
-            loginBtn.addEventListener('click', () => {
-                loginModal.style.display = 'block';
-            });
-            
-            // 添加机场按钮点击事件
-            addAirportBtn.addEventListener('click', () => {
-                if (currentUser) {
-                    addAirportModal.style.display = 'block';
-                } else {
-                    alert('请先登录！');
-                }
-            });
-            
-            // 关闭模态框事件
-            loginClose.addEventListener('click', () => {
-                loginModal.style.display = 'none';
-                loginMessage.style.display = 'none';
-            });
-            
-            addAirportClose.addEventListener('click', () => {
-                addAirportModal.style.display = 'none';
-                addAirportMessage.style.display = 'none';
-            });
-            
-            // 点击模态框外部关闭
-            window.addEventListener('click', (event) => {
-                if (event.target === loginModal) {
-                    loginModal.style.display = 'none';
-                    loginMessage.style.display = 'none';
-                }
-                if (event.target === addAirportModal) {
-                    addAirportModal.style.display = 'none';
-                    addAirportMessage.style.display = 'none';
-                }
-            });
-            
-            // 登录提交事件
-            loginSubmit.addEventListener('click', () => {
-                login(usernameInput.value, passwordInput.value);
-            });
-            
-            // 添加机场提交事件
-            addAirportSubmit.addEventListener('click', () => {
-                addAirport(newAirportCodeInput.value, newAirportNameInput.value, newAirportCountryInput.value);
-            });
-            
             // 抽签按钮点击事件
             drawBtn.addEventListener('click', drawRoute);
         }
