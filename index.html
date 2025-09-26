@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航线抽签器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 标题区域 -->
+        <div class="header">
+            <h1>航线抽签器</h1>
+            <!-- 管理员控制区域 -->
+            <div class="admin-controls">
+                <p class="copyright">此抽签器归LMJ（长征）集团所有</p>
+            </div>
+        </div>
+
+        <!-- 选择区域 -->
+        <div class="selection-area">
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <label for="departure-country" class="form-label">选择起飞机场国家:</label>
+                    <select id="departure-country" class="form-select">
+                        <option value="all">所有国家</option>
+                        <option value="china">中国</option>
+                        <option value="japan">日本</option>
+                        <option value="korea">韩国</option>
+                        <option value="thailand">泰国</option>
+                        <option value="singapore">新加坡</option>
+                        <option value="india">印度</option>
+                        <option value="uae">阿联酋</option>
+                        <option value="uk">英国</option>
+                        <option value="france">法国</option>
+                        <option value="germany">德国</option>
+                        <option value="spain">西班牙</option>
+                        <option value="netherlands">荷兰</option>
+                        <option value="switzerland">瑞士</option>
+                        <option value="turkey">土耳其</option>
+                        <option value="italy">意大利</option>
+                        <option value="russia">俄罗斯</option>
+                        <option value="usa">美国</option>
+                        <option value="canada">加拿大</option>
+                        <option value="australia">澳大利亚</option>
+                        <option value="newzealand">新西兰</option>
+                        <option value="brazil">巴西</option>
+                        <option value="argentina">阿根廷</option>
+                        <option value="colombia">哥伦比亚</option>
+                        <option value="mexico">墨西哥</option>
+                        <option value="southafrica">南非</option>
+                        <option value="saudiarabia">沙特阿拉伯</option>
+                        <option value="qatar">卡塔尔</option>
+                        <option value="kuwait">科威特</option>
+                        <option value="bahrain">巴林</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="arrival-country" class="form-label">选择降落机场国家:</label>
+                    <select id="arrival-country" class="form-select">
+                        <option value="all">所有国家</option>
+                        <option value="china">中国</option>
+                        <option value="japan">日本</option>
+                        <option value="korea">韩国</option>
+                        <option value="thailand">泰国</option>
+                        <option value="singapore">新加坡</option>
+                        <option value="india">印度</option>
+                        <option value="uae">阿联酋</option>
+                        <option value="uk">英国</option>
+                        <option value="france">法国</option>
+                        <option value="germany">德国</option>
+                        <option value="spain">西班牙</option>
+                        <option value="netherlands">荷兰</option>
+                        <option value="switzerland">瑞士</option>
+                        <option value="turkey">土耳其</option>
+                        <option value="italy">意大利</option>
+                        <option value="russia">俄罗斯</option>
+                        <option value="usa">美国</option>
+                        <option value="canada">加拿大</option>
+                        <option value="australia">澳大利亚</option>
+                        <option value="newzealand">新西兰</option>
+                        <option value="brazil">巴西</option>
+                        <option value="argentina">阿根廷</option>
+                        <option value="colombia">哥伦比亚</option>
+                        <option value="mexico">墨西哥</option>
+                        <option value="southafrica">南非</option>
+                        <option value="saudiarabia">沙特阿拉伯</option>
+                        <option value="qatar">卡塔尔</option>
+                        <option value="kuwait">科威特</option>
+                        <option value="bahrain">巴林</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-10">
+                    <label for="aircraft-type" class="form-label">选择机型:</label>
+                    <select id="aircraft-type" class="form-select">
+                        <!-- 波音系列 -->
+                        <optgroup label="波音系列">
+                            <option value="b737-300">波音737-300</option>
+                            <option value="b737-700">波音737-700</option>
+                            <option value="b737-800">波音737-800</option>
+                            <option value="b737-max8">波音737 MAX 8</option>
+                            <option value="b747-400">波音747-400</option>
+                            <option value="b747-8">波音747-8</option>
+                            <option value="b757-200">波音757-200</option>
+                            <option value="b767-300">波音767-300</option>
+                            <option value="b777-200">波音777-200</option>
+                            <option value="b777-300er">波音777-300ER</option>
+                            <option value="b777x">波音777X</option>
+                            <option value="b787-8">波音787-8</option>
+                            <option value="b787-9">波音787-9</option>
+                            <option value="b787-10">波音787-10</option>
+                            <option value="b797">波音797</option>
+                        </optgroup>
+                        
+                        <!-- 空客系列 -->
+                        <optgroup label="空客系列">
+                            <option value="a319">空客A319</option>
+                            <option value="a320">空客A320</option>
+                            <option value="a320neo">空客A320neo</option>
+                            <option value="a321">空客A321</option>
+                            <option value="a321neo">空客A321neo</option>
+                            <option value="a330-200">空客A330-200</option>
+                            <option value="a330-300">空客A330-300</option>
+                            <option value="a330neo">空客A330neo</option>
+                            <option value="a340-300">空客A340-300</option>
+                            <option value="a340-600">空客A340-600</option>
+                            <option value="a350-900">空客A350-900</option>
+                            <option value="a350-1000">空客A350-1000</option>
+                            <option value="a380">空客A380</option>
+                        </optgroup>
+                        
+                        <!-- 其他制造商 -->
+                        <optgroup label="其他制造商">
+                            <option value="embraer-175">巴西航空ERJ-175</option>
+                            <option value="embraer-190">巴西航空ERJ-190</option>
+                            <option value="embraer-e195">巴西航空E195-E2</option>
+                            <option value="crj-900">庞巴迪CRJ-900</option>
+                            <option value="atr-72">ATR-72</option>
+                            <option value="dhc-8">庞巴迪Dash 8</option>
+                            <option value="tu-204">图波列夫TU-204</option>
+                            <option value="il-96">伊留申IL-96</option>
+                            <option value="c919">中国商飞C919</option>
+                            <option value="comac-c929">中国商飞C929</option>
+                            <option value="an-124">安东诺夫AN-124</option>
+                            <option value="concorde">协和号（超音速）</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 机场显示区域 -->
+        <div class="airport-display-area">
+            <div class="row justify-content-center">
+                <div class="col-md-4 airport-card">
+                    <h3>起飞机场</h3>
+                    <div id="departure-airport" class="airport-info">
+                        <p class="code">---</p>
+                        <p class="name">点击抽签开始</p>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center align-self-center">
+                    <i class="fas fa-arrow-right text-primary"></i>
+                </div>
+                <div class="col-md-3 text-center align-self-center flight-info-area">
+                    <div id="flight-info" class="flight-info">
+                        <!-- 飞行信息将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+                <div class="col-md-4 airport-card">
+                    <div id="arrival-airport" class="airport-info">
+                        <h3>降落机场</h3>
+                        <p class="code">---</p>
+                        <p class="name">点击抽签开始</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 抽签按钮 -->
+        <div class="draw-button-area">
+            <button id="draw-btn" class="btn draw-btn">抽签</button>
+        </div>
+
+        <!-- 历史记录区域 -->
+        <div class="history-area">
+            <h2>历史记录</h2>
+            <div id="history-list" class="history-list">
+                <!-- 历史记录将通过JavaScript动态添加 -->
+                <p class="no-history">暂无历史记录</p>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="app.js"></script>
+</body>
+</html>
