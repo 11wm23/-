@@ -528,22 +528,58 @@ function selectRandomRoute() {
     };
 }
 
+// 国家代码到中文名称的映射
+const countryMap = {
+    'china': '中国',
+    'japan': '日本',
+    'korea': '韩国',
+    'thailand': '泰国',
+    'singapore': '新加坡',
+    'india': '印度',
+    'uae': '阿联酋',
+    'uk': '英国',
+    'france': '法国',
+    'germany': '德国',
+    'spain': '西班牙',
+    'netherlands': '荷兰',
+    'switzerland': '瑞士',
+    'turkey': '土耳其',
+    'italy': '意大利',
+    'russia': '俄罗斯',
+    'usa': '美国',
+    'canada': '加拿大',
+    'australia': '澳大利亚',
+    'newzealand': '新西兰',
+    'brazil': '巴西',
+    'argentina': '阿根廷',
+    'colombia': '哥伦比亚',
+    'mexico': '墨西哥',
+    'southafrica': '南非',
+    'saudiarabia': '沙特阿拉伯',
+    'qatar': '卡塔尔',
+    'kuwait': '科威特',
+    'bahrain': '巴林'
+};
+
 // 更新机场显示
 function updateAirportDisplay(element, airport) {
     // 添加动画效果
     element.style.opacity = '0';
+    
+    // 获取国家名称，如果没有映射则使用原始代码
+    const countryName = countryMap[airport.country] || airport.country;
     
     setTimeout(() => {
         if (element === arrivalAirport) {
             element.innerHTML = `
                 <h3>降落机场</h3>
                 <p class="code">${airport.code}</p>
-                <p class="name">${airport.name}</p>
+                <p class="name">${airport.name}（${countryName}）</p>
             `;
         } else {
             element.innerHTML = `
                 <p class="code">${airport.code}</p>
-                <p class="name">${airport.name}</p>
+                <p class="name">${airport.name}（${countryName}）</p>
             `;
         }
         element.style.opacity = '1';
