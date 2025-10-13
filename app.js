@@ -34,7 +34,7 @@ const airports = [
     { code: 'RJTT', name: '东京羽田国际机场', country: 'japan' },
     { code: 'RJBB', name: '大阪关西国际机场', country: 'japan' },
     { code: 'RJCC', name: '大阪伊丹国际机场', country: 'japan' },
-    { code: 'RJOO', name: '名古屋中部国际机场', country: 'japan' },
+    { code: 'RJGG', name: '名古屋中部国际机场', country: 'japan' },
     { code: 'ROAH', name: '北海道新千岁国际机场', country: 'japan' },
     
     // 韩国机场
@@ -353,54 +353,60 @@ const airportCoordinates = {
     'OBBI': { lat: 26.28, lng: 50.60 } // 巴林
 };
 
-// 机型速度数据（公里/小时）
-const aircraftSpeeds = {
+// 机型详细数据（包含更准确的巡航速度和爬升/下降因素）
+const aircraftData = {
     // 波音系列
-    'b737-300': 800,
-    'b737-700': 815,
-    'b737-800': 828,
-    'b737-max8': 830,
-    'b747-400': 917,
-    'b747-8': 910,
-    'b757-200': 870,
-    'b767-300': 851,
-    'b777-200': 905,
-    'b777-300er': 905,
-    'b777x': 950,
-    'b787-8': 903,
-    'b787-9': 913,
-    'b787-10': 910,
-    'b797': 880,
+    'b737-300': { cruiseSpeed: 828, climbFactor: 1.07 },
+    'b737-700': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'b737-800': { cruiseSpeed: 835, climbFactor: 1.06 },
+    'b737-max8': { cruiseSpeed: 840, climbFactor: 1.05 },
+    'b747-400': { cruiseSpeed: 910, climbFactor: 1.08 },
+    'b747-8': { cruiseSpeed: 915, climbFactor: 1.07 },
+    'b757-200': { cruiseSpeed: 875, climbFactor: 1.06 },
+    'b767-300': { cruiseSpeed: 860, climbFactor: 1.07 },
+    'b777-200': { cruiseSpeed: 905, climbFactor: 1.08 },
+    'b777-300er': { cruiseSpeed: 910, climbFactor: 1.08 },
+    'b777x': { cruiseSpeed: 950, climbFactor: 1.07 },
+    'b787-8': { cruiseSpeed: 905, climbFactor: 1.06 },
+    'b787-9': { cruiseSpeed: 910, climbFactor: 1.06 },
+    'b787-10': { cruiseSpeed: 915, climbFactor: 1.05 },
+    'b797': { cruiseSpeed: 885, climbFactor: 1.06 },
     
     // 空客系列
-    'a319': 829,
-    'a320': 829,
-    'a320neo': 828,
-    'a321': 829,
-    'a321neo': 828,
-    'a330-200': 871,
-    'a330-300': 871,
-    'a330neo': 871,
-    'a340-300': 885,
-    'a340-600': 880,
-    'a350-900': 905,
-    'a350-1000': 905,
-    'a380': 907,
+    'a319': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a320': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a320neo': { cruiseSpeed: 835, climbFactor: 1.05 },
+    'a321': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a321neo': { cruiseSpeed: 835, climbFactor: 1.05 },
+    'a330-200': { cruiseSpeed: 875, climbFactor: 1.07 },
+    'a330-300': { cruiseSpeed: 875, climbFactor: 1.07 },
+    'a330neo': { cruiseSpeed: 880, climbFactor: 1.06 },
+    'a340-300': { cruiseSpeed: 885, climbFactor: 1.08 },
+    'a340-600': { cruiseSpeed: 880, climbFactor: 1.08 },
+    'a350-900': { cruiseSpeed: 910, climbFactor: 1.06 },
+    'a350-1000': { cruiseSpeed: 915, climbFactor: 1.06 },
+    'a380': { cruiseSpeed: 910, climbFactor: 1.09 },
     
     // 其他制造商
-    'embraer-190': 829,
-    'embraer-e195': 829,
-    'embraer-175': 820,
-    'crj-900': 815,
-    'atr-72': 500,
-    'dhc-8': 520,
-    'tu-204': 850,
-    'il-96': 870,
-    'c919': 825,
-    'comac-c929': 900,
-    'an-124': 865,
-    'concorde': 2179
+    'embraer-190': { cruiseSpeed: 830, climbFactor: 1.07 },
+    'embraer-e195': { cruiseSpeed: 830, climbFactor: 1.07 },
+    'embraer-175': { cruiseSpeed: 825, climbFactor: 1.07 },
+    'crj-900': { cruiseSpeed: 820, climbFactor: 1.08 },
+    'atr-72': { cruiseSpeed: 500, climbFactor: 1.15 },
+    'dhc-8': { cruiseSpeed: 520, climbFactor: 1.12 },
+    'tu-204': { cruiseSpeed: 855, climbFactor: 1.09 },
+    'il-96': { cruiseSpeed: 875, climbFactor: 1.08 },
+    'c919': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'comac-c929': { cruiseSpeed: 905, climbFactor: 1.07 },
+    'an-124': { cruiseSpeed: 865, climbFactor: 1.10 },
+    'concorde': { cruiseSpeed: 2179, climbFactor: 1.05 }
 };
+
+// 用于兼容旧代码的映射
+const aircraftSpeeds = {};
+for (const [key, data] of Object.entries(aircraftData)) {
+    aircraftSpeeds[key] = data.cruiseSpeed;
+}
 
 // 使用Haversine公式计算两个坐标之间的距离（公里）
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -416,10 +422,34 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return distance;
 }
 
-// 计算飞行时间（小时）
+// 计算飞行时间（小时）- 包含爬升/下降因素以提高准确性
 function calculateFlightTime(distance, aircraftType) {
-    const speed = aircraftSpeeds[aircraftType] || 850; // 默认速度
-    return distance / speed;
+    // 获取机型数据，如果没有找到则使用默认值
+    const aircraft = aircraftData[aircraftType];
+    let cruiseSpeed = 850; // 默认巡航速度
+    let climbFactor = 1.07; // 默认爬升/下降因素
+    
+    if (aircraft) {
+        cruiseSpeed = aircraft.cruiseSpeed;
+        climbFactor = aircraft.climbFactor;
+    }
+    
+    // 根据距离调整爬升/下降因素（短距离航线爬升/下降占比更大）
+    let adjustedClimbFactor = climbFactor;
+    if (distance < 1000) {
+        adjustedClimbFactor = climbFactor + 0.03; // 短距离航线增加额外因素
+    } else if (distance < 3000) {
+        adjustedClimbFactor = climbFactor + 0.01; // 中距离航线小幅增加
+    }
+    
+    // 计算巡航时间
+    const cruiseTime = distance / cruiseSpeed;
+    
+    // 考虑爬升、下降和空中等待时间（通常为15-30分钟）
+    const additionalTime = 0.25 + (distance * 0.0001); // 基础额外时间+距离相关额外时间
+    
+    // 返回总飞行时间（包括爬升/下降因素和额外时间）
+    return cruiseTime * adjustedClimbFactor + additionalTime;
 }
 
 // 格式化飞行时间显示
@@ -438,7 +468,7 @@ function filterAirportsByCountry(airportsList, countryCode) {
     return airportsList.filter(airport => airport.country === countryCode);
 }
 
-// 随机选择两个不同的机场
+// 随机选择两个不同的机场，确保飞行时间在两小时以上
 function selectRandomRoute() {
     // 获取用户选择的国家
     const departureCountryCode = departureCountry.value;
@@ -454,23 +484,38 @@ function selectRandomRoute() {
         return null;
     }
     
-    // 确保选择两个不同的机场（如果起飞机场和降落机场的国家相同）
-    let departure, arrival;
-    if (departureCountryCode === arrivalCountryCode && filteredDepartureAirports.length > 1) {
-        do {
+    // 设置最大尝试次数，避免可能的无限循环
+    const maxAttempts = 100;
+    let attempts = 0;
+    let departure, arrival, distance, flightTime;
+    
+    // 循环直到找到飞行时间超过两小时的航线或达到最大尝试次数
+    do {
+        attempts++;
+        
+        // 确保选择两个不同的机场（如果起飞机场和降落机场的国家相同）
+        if (departureCountryCode === arrivalCountryCode && filteredDepartureAirports.length > 1) {
+            do {
+                departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
+                arrival = filteredArrivalAirports[Math.floor(Math.random() * filteredArrivalAirports.length)];
+            } while (departure.code === arrival.code);
+        } else {
             departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
             arrival = filteredArrivalAirports[Math.floor(Math.random() * filteredArrivalAirports.length)];
-        } while (departure.code === arrival.code);
-    } else {
-        departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
-        arrival = filteredArrivalAirports[Math.floor(Math.random() * filteredArrivalAirports.length)];
-    }
+        }
+        
+        // 计算飞行距离和时间
+        const depCoords = airportCoordinates[departure.code];
+        const arrCoords = airportCoordinates[arrival.code];
+        distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
+        flightTime = calculateFlightTime(distance, aircraftType.value);
+        
+        // 如果达到最大尝试次数且没有找到符合条件的航线，放宽限制
+        if (attempts >= maxAttempts) {
+            break;
+        }
+    } while (flightTime < 2); // 只接受飞行时间在两小时以上的航线
     
-    // 计算飞行距离和时间
-    const depCoords = airportCoordinates[departure.code];
-    const arrCoords = airportCoordinates[arrival.code];
-    const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
-    const flightTime = calculateFlightTime(distance, aircraftType.value);
     const formattedTime = formatFlightTime(flightTime);
     
     return {
