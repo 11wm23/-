@@ -39,9 +39,29 @@ body {
 
 .admin-controls {
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
     margin-bottom: 20px;
+    background-color: #f9f5ff;
+    border-radius: 20px;
+    border: 1px solid #e6ccff;
+    padding: 8px 15px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.copyright {
+    margin: 0;
+    text-align: center;
+    color: #9966cc;
+    font-size: 0.9rem;
+    font-style: italic;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    border: none;
 }
 
 .login-btn {
@@ -283,17 +303,7 @@ body {
     animation: fadeIn 0.3s ease;
 }
 
-/* 版权信息样式 */
-.copyright {
-    color: #9966cc;
-    font-size: 0.9rem;
-    font-style: italic;
-    margin: 0;
-    padding: 8px 16px;
-    background-color: #f9f5ff;
-    border-radius: 20px;
-    border: 1px solid #e6ccff;
-}
+/* 版权信息样式已移至上方admin-controls样式中 */
 
 .distance, .time {
     color: #2c3e50;
