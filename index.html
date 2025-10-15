@@ -153,45 +153,313 @@
             <div class="row justify-content-center mt-4">
                 <div class="col-md-10">
                     <label for="flight-time-range" class="form-label">选择飞行时间范围:</label>
-                    <select id="flight-time-range" class="form-select">
+                    <select id="flight-time-range" class="form-select custom-select">
                         <option value="all">所有时间</option>
                         <option value="ultrashort">超短途 (1-2小时)</option>
                         <option value="short">短途 (2-5小时)</option>
-                        <option value="medium">长途 (5-12小时)</option>
-                        <option value="long">超长途 (12-20小时)</option>
+                        <option value="medium">中长途 (5-12小时)</option>
+                        <option value="long">长途 (12-20小时)</option>
                         <option value="ultralong">超远长途 (20小时以上)</option>
                     </select>
+                    <div class="form-check mt-3 custom-check-container">
+                        <input class="form-check-input custom-checkbox" type="checkbox" id="include-stopover" value="">
+                        <label class="form-check-label custom-checkbox-label" for="include-stopover">
+                            包含中转机场
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 机场显示区域 -->
+        <!-- 机场显示区域 - 支持中转机场 -->
         <div class="airport-display-area">
             <div class="row justify-content-center">
-                <div class="col-md-4 airport-card">
-                    <h3>起飞机场</h3>
-                    <div id="departure-airport" class="airport-info">
-                        <p class="code">---</p>
-                        <p class="name">点击抽签开始</p>
+                <!-- 起飞机场及其信息区域 -->
+                <div class="col-md-3 airport-section">
+                    <div class="airport-card stopover-card transfer-box">
+                        <h3>起飞机场</h3>
+                        <div id="departure-airport" class="airport-info">
+                            <p class="code">---</p>
+                            <p class="name">点击抽签开始</p>
+                        </div>
+                    </div>
+                    <div id="first-segment-info" class="flight-segment-info">
+                        <!-- 第一段飞行信息将在这里显示 -->
                     </div>
                 </div>
-                <div class="col-md-2 text-center align-self-center">
+                
+                <div class="col-md-1 text-center align-self-center transfer-arrow">
                     <i class="fas fa-arrow-right text-primary"></i>
                 </div>
-                <div class="col-md-3 text-center align-self-center flight-info-area">
-                    <div id="flight-info" class="flight-info">
-                        <!-- 飞行信息将通过JavaScript动态添加 -->
+                
+                <!-- 中转机场区域，默认隐藏 -->
+                <div class="col-md-3 airport-section" id="stopover-container" style="display: none;">
+                    <div class="airport-card stopover-card transfer-box">
+                        <h3>中转机场</h3>
+                        <div id="stopover-airport" class="airport-info">
+                            <p class="code">---</p>
+                            <p class="name">中转机场</p>
+                        </div>
+                    </div>
+                    <div id="second-segment-info" class="flight-segment-info">
+                        <!-- 第二段飞行信息将在这里显示 -->
                     </div>
                 </div>
-                <div class="col-md-4 airport-card">
-                    <div id="arrival-airport" class="airport-info">
-                        <h3>降落机场</h3>
-                        <p class="code">---</p>
-                        <p class="name">点击抽签开始</p>
+                
+                <div class="col-md-1 text-center align-self-center transfer-arrow second-arrow">
+                    <i class="fas fa-arrow-right text-primary"></i>
+                </div>
+                
+                <!-- 降落机场及其信息区域 -->
+                <div class="col-md-3 airport-section">
+                    <div class="airport-card stopover-card transfer-box">
+                        <div id="arrival-airport" class="airport-info">
+                            <h3>降落机场</h3>
+                            <p class="code">---</p>
+                            <p class="name">点击抽签开始</p>
+                        </div>
+                    </div>
+                    <div id="total-flight-info" class="flight-segment-info">
+                        <!-- 总飞行信息将在这里显示 -->
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- 非中转模式下的中间信息显示区域 -->
+        <div id="flight-info" class="flight-info">
+            <!-- 非中转模式下的飞行信息将在这里动态显示 -->
+        </div>
+        
+        <style>
+            /* 中转机场相关样式 */
+            .airport-card {
+                background-color: #ffffff;
+                border: 2px solid #7c3aed;
+                border-radius: 8px;
+                padding: 25px 30px;
+                text-align: center;
+                transition: all 0.3s ease-in-out;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                width: 100%;
+                min-height: 200px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            .airport-card h3 {
+                color: #7c3aed;
+                margin-bottom: 15px;
+                font-size: 18px;
+                font-weight: 600;
+            }
+            
+            .airport-card .airport-info .code {
+                color: #7c3aed;
+                font-size: 28px;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+            
+            .airport-card .airport-info .name {
+                color: #6b7280;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            
+            .stopover-card, .transfer-box {
+                /* 继承airport-card的样式 */
+            }
+            
+            /* 自定义复选框容器样式 */
+            .custom-check-container {
+                background-color: #ffffff;
+                border: 2px solid #7c3aed;
+                border-radius: 8px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                margin-top: 15px;
+            }
+            
+            /* 自定义复选框样式 */
+            .custom-checkbox {
+                width: 20px;
+                height: 20px;
+                border: 2px solid #7c3aed;
+                border-radius: 4px;
+                margin-right: 12px;
+                cursor: pointer;
+            }
+            
+            .custom-checkbox:checked {
+                background-color: #7c3aed;
+                border-color: #7c3aed;
+            }
+            
+            /* 自定义复选框标签样式 */
+            .custom-checkbox-label {
+                font-size: 16px;
+                color: #4b5563;
+                cursor: pointer;
+                margin-bottom: 0;
+                flex: 1;
+            }
+            
+            /* 自定义选择框样式 */
+            .custom-select {
+                background-color: #ffffff;
+                border: 2px solid #7c3aed;
+                border-radius: 8px;
+                padding: 10px 15px;
+                font-size: 16px;
+                color: #4b5563;
+                width: 100%;
+                cursor: pointer;
+                transition: border-color 0.3s ease;
+            }
+            
+            .custom-select:focus {
+                border-color: #7c3aed;
+                box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+                outline: none;
+            }
+            
+            .custom-select option {
+                padding: 8px;
+                background-color: #ffffff;
+                color: #4b5563;
+            }
+            
+            .transfer-arrow {
+                font-size: 24px;
+                color: #007bff;
+                font-weight: bold;
+            }
+            
+            .flight-info .segment {
+                margin-bottom: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .flight-info .segment-title {
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            
+            .flight-info .transfer {
+                color: #ffc107;
+                font-weight: bold;
+                margin: 5px 0;
+            }
+            
+            .flight-info .total {
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 2px solid #007bff;
+            }
+            
+            .flight-info .total-title {
+                font-weight: bold;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            
+            /* 新的机场区域样式 */
+            .airport-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .flight-segment-info {
+                width: 100%;
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 5px;
+                text-align: center;
+                font-size: 14px;
+            }
+            
+            .flight-segment-info p {
+                margin: 3px 0;
+            }
+            
+            .flight-segment-info .distance {
+                color: #007bff;
+                font-weight: bold;
+            }
+            
+            .flight-segment-info .time {
+                color: #28a745;
+                font-weight: bold;
+            }
+            
+            .flight-segment-info .segment-label {
+                font-weight: bold;
+                color: #666;
+                font-size: 12px;
+            }
+            
+            /* 非中转模式下的中间信息显示区域样式 */
+            .flight-info {
+                text-align: center;
+                padding: 15px;
+                background-color: #f0f8ff;
+                border-radius: 5px;
+                margin-top: 10px;
+                display: none; /* 默认隐藏，在非中转模式下显示 */
+            }
+            
+            .flight-info .distance {
+                font-size: 18px;
+                color: #007bff;
+                font-weight: bold;
+            }
+            
+            .flight-info .time {
+                font-size: 16px;
+                color: #555;
+            }
+            
+            /* 响应式调整 */
+            @media (max-width: 768px) {
+                .airport-display-area .row {
+                    flex-direction: column;
+                }
+                
+                .airport-card {
+                    margin-bottom: 15px;
+                    width: 100% !important;
+                }
+                
+                .airport-section {
+                    width: 100%;
+                    margin-bottom: 15px;
+                }
+                
+                .transfer-arrow {
+                    transform: rotate(90deg);
+                    margin: 10px 0;
+                }
+                
+                .second-arrow {
+                    display: none;
+                }
+                
+                #stopover-container {
+                    order: 3;
+                }
+                
+                .flight-info-area {
+                    order: 4;
+                }
+            }
+        </style>
 
         <!-- 抽签按钮 -->
         <div class="draw-button-area">
@@ -200,7 +468,7 @@
 
         <!-- 历史记录区域 -->
         <div class="history-area">
-            <h2>历史记录</h2>
+            <h2>历史记录（仅显示最近十条）</h2>
             <div id="history-list" class="history-list">
                 <!-- 历史记录将通过JavaScript动态添加 -->
                 <p class="no-history">暂无历史记录</p>

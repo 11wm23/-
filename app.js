@@ -187,6 +187,10 @@ const arrivalCountry = document.getElementById('arrival-country');
 const aircraftType = document.getElementById('aircraft-type');
 const historyList = document.getElementById('history-list');
 const flightInfo = document.getElementById('flight-info');
+const includeStopover = document.getElementById('include-stopover');
+const stopoverContainer = document.getElementById('stopover-container');
+const stopoverAirport = document.getElementById('stopover-airport');
+
 // 获取DOM元素并确保它们存在
 let flightTimeRange;
 try {
@@ -502,31 +506,88 @@ function selectRandomRoute() {
             return null;
         }
         
+        // 检查是否需要包含中转机场
+        const shouldIncludeStopover = includeStopover && includeStopover.checked;
+        
         // 生成所有可能的航线组合，并计算飞行时间
         const possibleRoutes = [];
-        for (const departure of filteredDepartureAirports) {
-            // 筛选降落机场，确保起飞机场和降落机场不同
-            let validArrivalAirports = filteredArrivalAirports.filter(airport => airport.code !== departure.code);
-            
-            for (const arrival of validArrivalAirports) {
-                // 确保机场坐标存在
-                if (!airportCoordinates[departure.code] || !airportCoordinates[arrival.code]) {
-                    continue; // 跳过没有坐标的机场
+        
+        if (shouldIncludeStopover) {
+            // 包含中转机场的航线生成
+            for (const departure of filteredDepartureAirports) {
+                // 所有可用的机场都可以作为中转机场（除了起飞机场）
+                const possibleStopoverAirports = airports.filter(airport => 
+                    airport.code !== departure.code && airportCoordinates[airport.code]
+                );
+                
+                for (const stopover of possibleStopoverAirports) {
+                    // 筛选降落机场，确保与起飞机场和中转机场都不同
+                    let validArrivalAirports = filteredArrivalAirports.filter(airport => 
+                        airport.code !== departure.code && airport.code !== stopover.code
+                    );
+                    
+                    for (const arrival of validArrivalAirports) {
+                        // 确保所有机场坐标都存在
+                        if (!airportCoordinates[departure.code] || !airportCoordinates[stopover.code] || !airportCoordinates[arrival.code]) {
+                            continue;
+                        }
+                        
+                        // 计算第一段（起飞机场到中转机场）的距离和时间
+                        const depCoords = airportCoordinates[departure.code];
+                        const stopoverCoords = airportCoordinates[stopover.code];
+                        const distance1 = calculateDistance(depCoords.lat, depCoords.lng, stopoverCoords.lat, stopoverCoords.lng);
+                        const flightTime1 = calculateFlightTime(distance1, aircraftType.value);
+                        
+                        // 计算第二段（中转机场到降落机场）的距离和时间
+                        const arrCoords = airportCoordinates[arrival.code];
+                        const distance2 = calculateDistance(stopoverCoords.lat, stopoverCoords.lng, arrCoords.lat, arrCoords.lng);
+                        const flightTime2 = calculateFlightTime(distance2, aircraftType.value);
+                        
+                        // 计算总距离和总时间（总时间包含1小时中转时间）
+                        const totalDistance = distance1 + distance2;
+                        const totalFlightTime = flightTime1 + flightTime2 + 1; // 加1小时中转时间
+                        
+                        // 添加到可能的航线中
+                        possibleRoutes.push({
+                            departure,
+                            stopover,
+                            arrival,
+                            distance1,
+                            distance2,
+                            totalDistance,
+                            flightTime1,
+                            flightTime2,
+                            totalFlightTime
+                        });
+                    }
                 }
+            }
+        } else {
+            // 直飞航线生成
+            for (const departure of filteredDepartureAirports) {
+                // 筛选降落机场，确保起飞机场和降落机场不同
+                let validArrivalAirports = filteredArrivalAirports.filter(airport => airport.code !== departure.code);
                 
-                // 计算距离和飞行时间
-                const depCoords = airportCoordinates[departure.code];
-                const arrCoords = airportCoordinates[arrival.code];
-                const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
-                const flightTime = calculateFlightTime(distance, aircraftType.value);
-                
-                // 添加到可能的航线中
-                possibleRoutes.push({
-                    departure,
-                    arrival,
-                    distance,
-                    flightTime
-                });
+                for (const arrival of validArrivalAirports) {
+                    // 确保机场坐标存在
+                    if (!airportCoordinates[departure.code] || !airportCoordinates[arrival.code]) {
+                        continue; // 跳过没有坐标的机场
+                    }
+                    
+                    // 计算距离和飞行时间
+                    const depCoords = airportCoordinates[departure.code];
+                    const arrCoords = airportCoordinates[arrival.code];
+                    const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
+                    const flightTime = calculateFlightTime(distance, aircraftType.value);
+                    
+                    // 添加到可能的航线中
+                    possibleRoutes.push({
+                        departure,
+                        arrival,
+                        distance,
+                        flightTime
+                    });
+                }
             }
         }
         
@@ -548,8 +609,8 @@ function selectRandomRoute() {
         if (timeRange !== 'all') {
             try {
                 filteredRoutes = possibleRoutes.filter(route => {
-                    // 确保flightTime是有效的数字
-                    const hours = Number(route.flightTime) || 0;
+                    // 根据是否有中转机场选择相应的时间字段
+                    const hours = Number(route.totalFlightTime || route.flightTime) || 0;
                     switch (timeRange) {
                         case 'ultrashort':
                             return hours >= 1 && hours <= 2;
@@ -578,16 +639,40 @@ function selectRandomRoute() {
         
         // 从筛选后的航线中随机选择一条
         const selectedRoute = filteredRoutes[Math.floor(Math.random() * filteredRoutes.length)];
-        const formattedTime = formatFlightTime(selectedRoute.flightTime);
         
-        return {
-            departure: selectedRoute.departure,
-            arrival: selectedRoute.arrival,
-            aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
-            timestamp: new Date().toLocaleString('zh-CN'),
-            distance: Math.round(selectedRoute.distance),
-            flightTime: formattedTime
-        };
+        // 格式化时间
+        if (selectedRoute.stopover) {
+            // 有中转机场的情况
+            const formattedTime1 = formatFlightTime(selectedRoute.flightTime1);
+            const formattedTime2 = formatFlightTime(selectedRoute.flightTime2);
+            const formattedTotalTime = formatFlightTime(selectedRoute.totalFlightTime);
+            
+            return {
+                departure: selectedRoute.departure,
+                stopover: selectedRoute.stopover,
+                arrival: selectedRoute.arrival,
+                aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
+                timestamp: new Date().toLocaleString('zh-CN'),
+                distance1: Math.round(selectedRoute.distance1),
+                distance2: Math.round(selectedRoute.distance2),
+                totalDistance: Math.round(selectedRoute.totalDistance),
+                flightTime1: formattedTime1,
+                flightTime2: formattedTime2,
+                flightTime: formattedTotalTime // 保留flightTime作为总时间的别名
+            };
+        } else {
+            // 直飞情况
+            const formattedTime = formatFlightTime(selectedRoute.flightTime);
+            
+            return {
+                departure: selectedRoute.departure,
+                arrival: selectedRoute.arrival,
+                aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
+                timestamp: new Date().toLocaleString('zh-CN'),
+                distance: Math.round(selectedRoute.distance),
+                flightTime: formattedTime
+            };
+        }
     } catch (error) {
         console.error('抽签过程中发生错误:', error);
         alert('抽签过程中发生错误，请刷新页面后重试。');
@@ -643,6 +728,11 @@ function updateAirportDisplay(element, airport) {
                 <p class="code">${airport.code}</p>
                 <p class="name">${airport.name}（${countryName}）</p>
             `;
+        } else if (element === stopoverAirport) {
+            element.innerHTML = `
+                <p class="code">${airport.code}</p>
+                <p class="name">${airport.name}（${countryName}）</p>
+            `;
         } else {
             element.innerHTML = `
                 <p class="code">${airport.code}</p>
@@ -679,13 +769,37 @@ function updateHistoryDisplay() {
     
     let html = '';
     history.forEach((route, index) => {
+        let routeHtml = `${route.departure.code} → ${route.arrival.code}`;
+        let routeNameHtml = `${route.departure.name} → ${route.arrival.name}`;
+        let distanceHtml = `<p>飞行距离: ${route.distance} km</p>`;
+        let timeHtml = `<p>预计飞行时间: ${route.flightTime}</p>`;
+        let stopoverHtml = '';
+        
+        if (route.stopover) {
+            const stopoverCountry = countryMap[route.stopover.country] || route.stopover.country;
+            routeHtml = `${route.departure.code} → ${route.stopover.code} → ${route.arrival.code}`;
+            routeNameHtml = `${route.departure.name} → ${route.stopover.name}（${stopoverCountry}）→ ${route.arrival.name}`;
+            distanceHtml = `
+                <p>第一段距离: ${route.distance1} km</p>
+                <p>第二段距离: ${route.distance2} km</p>
+                <p>总距离: ${route.totalDistance} km</p>
+            `;
+            timeHtml = `
+                <p>第一段时间: ${route.flightTime1}</p>
+                <p>第二段时间: ${route.flightTime2}</p>
+                <p>总时间: ${route.flightTime}（含1小时中转）</p>
+            `;
+            stopoverHtml = `<p><small>中转机场: ${route.stopover.code} - ${route.stopover.name}（${stopoverCountry}）</small></p>`;
+        }
+        
         html += `
             <div class="history-item">
-                <p><strong>航线 ${index + 1}:</strong> ${route.departure.code} → ${route.arrival.code}</p>
-                <p>${route.departure.name} → ${route.arrival.name}</p>
+                <p><strong>航线 ${index + 1}:</strong> ${routeHtml}</p>
+                <p>${routeNameHtml}</p>
+                ${stopoverHtml}
                 <p>机型: ${route.aircraft}</p>
-                <p>飞行距离: ${route.distance} km</p>
-                <p>预计飞行时间: ${route.flightTime}</p>
+                ${distanceHtml}
+                ${timeHtml}
                 <p class="timestamp">${route.timestamp}</p>
             </div>
         `;
@@ -695,23 +809,83 @@ function updateHistoryDisplay() {
 }
 
 // 抽签按钮点击事件
-// 在箭头右边显示飞行信息
+// 显示各段飞行信息在对应的机场下方
 function displayFlightInfo(route) {
-    if (!route) {
-        flightInfo.innerHTML = '';
-        return;
+    // 获取各个信息显示元素
+    const firstSegmentInfo = document.getElementById('first-segment-info');
+    const secondSegmentInfo = document.getElementById('second-segment-info');
+    const totalFlightInfo = document.getElementById('total-flight-info');
+    const middleFlightInfo = document.getElementById('flight-info');
+    
+    // 重置所有信息显示区域
+    if (firstSegmentInfo) firstSegmentInfo.innerHTML = '';
+    if (secondSegmentInfo) secondSegmentInfo.innerHTML = '';
+    if (totalFlightInfo) totalFlightInfo.innerHTML = '';
+    if (middleFlightInfo) middleFlightInfo.innerHTML = '';
+    
+    if (!route) return;
+    
+    if (route.stopover) {
+        // 中转模式：在各个机场下方显示对应信息
+        if (firstSegmentInfo) {
+            firstSegmentInfo.style.opacity = '0';
+            setTimeout(() => {
+                firstSegmentInfo.innerHTML = `
+                    <p class="segment-label">第一段飞行</p>
+                    <p class="distance">距离: ${route.distance1} km</p>
+                    <p class="time">时间: ${route.flightTime1}</p>
+                `;
+                firstSegmentInfo.style.opacity = '1';
+            }, 300);
+        }
+        
+        if (secondSegmentInfo) {
+            secondSegmentInfo.style.opacity = '0';
+            setTimeout(() => {
+                secondSegmentInfo.innerHTML = `
+                    <p class="segment-label">第二段飞行</p>
+                    <p class="distance">距离: ${route.distance2} km</p>
+                    <p class="time">时间: ${route.flightTime2}</p>
+                `;
+                secondSegmentInfo.style.opacity = '1';
+            }, 300);
+        }
+        
+        if (totalFlightInfo) {
+            totalFlightInfo.style.opacity = '0';
+            setTimeout(() => {
+                totalFlightInfo.innerHTML = `
+                    <p class="segment-label">全程信息</p>
+                    <p class="distance">总距离: ${route.totalDistance} km</p>
+                    <p class="time">总时间: ${route.flightTime}</p>
+                `;
+                totalFlightInfo.style.opacity = '1';
+            }, 300);
+        }
+        
+        // 隐藏中间的信息区域
+        if (middleFlightInfo) {
+            middleFlightInfo.style.display = 'none';
+        }
+    } else {
+        // 非中转模式：在中间显示全程信息
+        if (middleFlightInfo) {
+            middleFlightInfo.style.opacity = '0';
+            middleFlightInfo.style.display = 'block';
+            setTimeout(() => {
+                middleFlightInfo.innerHTML = `
+                    <p class="distance">飞行距离: ${route.distance} km</p>
+                    <p class="time">预计飞行时间: ${route.flightTime}</p>
+                `;
+                middleFlightInfo.style.opacity = '1';
+            }, 300);
+        }
+        
+        // 隐藏各段信息显示区域
+        if (firstSegmentInfo) firstSegmentInfo.innerHTML = '';
+        if (secondSegmentInfo) secondSegmentInfo.innerHTML = '';
+        if (totalFlightInfo) totalFlightInfo.innerHTML = '';
     }
-    
-    // 添加动画效果
-    flightInfo.style.opacity = '0';
-    
-    setTimeout(() => {
-        flightInfo.innerHTML = `
-            <p class="distance">飞行距离: ${route.distance} km</p>
-            <p class="time">预计飞行时间: ${route.flightTime}</p>
-        `;
-        flightInfo.style.opacity = '1';
-    }, 300);
 }
 
 function handleDrawClick() {
@@ -727,7 +901,15 @@ function handleDrawClick() {
         updateAirportDisplay(departureAirport, route.departure);
         updateAirportDisplay(arrivalAirport, route.arrival);
         
-        // 在箭头右边显示飞行信息
+        // 处理中转机场显示
+        if (route.stopover) {
+            stopoverContainer.style.display = 'block';
+            updateAirportDisplay(stopoverAirport, route.stopover);
+        } else {
+            stopoverContainer.style.display = 'none';
+        }
+        
+        // 显示飞行信息在正确的位置
         displayFlightInfo(route);
         
         // 添加到历史记录
@@ -755,6 +937,10 @@ function initHistory() {
     const savedHistory = localStorage.getItem('flightDrawHistory');
     if (savedHistory) {
         history = JSON.parse(savedHistory);
+        // 只保留最近10条历史记录
+        if (history.length > 10) {
+            history = history.slice(0, 10);
+        }
         updateHistoryDisplay();
     }
 }
@@ -763,6 +949,53 @@ function initHistory() {
 function init() {
     // 添加事件监听器
     drawBtn.addEventListener('click', handleDrawClick);
+    
+    // 中转机场选项变化时的处理
+    if (includeStopover) {
+        includeStopover.addEventListener('change', function() {
+            if (this.checked) {
+                stopoverContainer.style.display = 'block';
+                // 为机场卡片添加过渡效果
+                if (stopoverAirport) {
+                    stopoverAirport.style.transition = 'opacity 0.3s ease-in-out';
+                }
+                // 隐藏中间的信息显示区域
+                const middleFlightInfo = document.getElementById('flight-info');
+                if (middleFlightInfo) {
+                    middleFlightInfo.style.display = 'none';
+                }
+                
+                // 禁用并隐藏超短途时间选项
+                if (flightTimeRange) {
+                    const ultrashortOption = Array.from(flightTimeRange.options).find(option => option.value === 'ultrashort');
+                    if (ultrashortOption) {
+                        ultrashortOption.disabled = true;
+                        ultrashortOption.style.display = 'none';
+                        // 如果当前选中的是超短途，切换到其他选项
+                        if (flightTimeRange.value === 'ultrashort') {
+                            flightTimeRange.value = 'all';
+                        }
+                    }
+                }
+            } else {
+                stopoverContainer.style.display = 'none';
+                // 显示中间的信息显示区域
+                const middleFlightInfo = document.getElementById('flight-info');
+                if (middleFlightInfo) {
+                    middleFlightInfo.style.display = 'block';
+                }
+                
+                // 启用并显示超短途时间选项
+                if (flightTimeRange) {
+                    const ultrashortOption = Array.from(flightTimeRange.options).find(option => option.value === 'ultrashort');
+                    if (ultrashortOption) {
+                        ultrashortOption.disabled = false;
+                        ultrashortOption.style.display = '';
+                    }
+                }
+            }
+        });
+    }
     
     // 为机场卡片添加过渡效果
     const airportElements = document.querySelectorAll('.airport-info');
@@ -778,6 +1011,32 @@ function init() {
     if (!arrivalCountry.value) arrivalCountry.value = 'all';
     if (!aircraftType.value) aircraftType.value = 'b737-300';
     if (!flightTimeRange.value) flightTimeRange.value = 'all';
+    
+    // 初始化CSS过渡效果
+    const segmentInfoElements = document.querySelectorAll('.flight-segment-info');
+    segmentInfoElements.forEach(el => {
+        el.style.transition = 'opacity 0.3s ease-in-out';
+    });
+    
+    // 初始化：根据中转选项状态显示或隐藏相应元素
+    const middleFlightInfo = document.getElementById('flight-info');
+    if (middleFlightInfo) {
+        middleFlightInfo.style.display = includeStopover && includeStopover.checked ? 'none' : 'block';
+        middleFlightInfo.style.transition = 'opacity 0.3s ease-in-out';
+    }
+    
+    // 初始化：根据中转选项状态设置超短途时间选项的可用性
+    if (includeStopover && includeStopover.checked && flightTimeRange) {
+        const ultrashortOption = Array.from(flightTimeRange.options).find(option => option.value === 'ultrashort');
+        if (ultrashortOption) {
+            ultrashortOption.disabled = true;
+            ultrashortOption.style.display = 'none';
+            // 如果当前选中的是超短途，切换到其他选项
+            if (flightTimeRange.value === 'ultrashort') {
+                flightTimeRange.value = 'all';
+            }
+        }
+    }
 }
 
 // 页面加载完成后初始化
