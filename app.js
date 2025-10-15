@@ -167,6 +167,9 @@ const airports = [
     
     // 卡塔尔机场
     { code: 'OTHH', name: '多哈哈马德国际机场', country: 'qatar' },
+    { code: 'OTBD', name: '多哈旧机场（多哈国际机场）', country: 'qatar' },
+    { code: 'OTMS', name: '乌姆赛义德军用机场', country: 'qatar' },
+    { code: 'OTGL', name: '阿尔乌代德空军基地', country: 'qatar' },
     
     // 科威特机场
     { code: 'OKBK', name: '科威特国际机场', country: 'kuwait' },
@@ -184,6 +187,7 @@ const arrivalCountry = document.getElementById('arrival-country');
 const aircraftType = document.getElementById('aircraft-type');
 const historyList = document.getElementById('history-list');
 const flightInfo = document.getElementById('flight-info');
+const flightTimeRange = document.getElementById('flight-time-range') || { value: 'all' };
 
 // 历史记录数组
 let history = [];
@@ -344,7 +348,10 @@ const airportCoordinates = {
     'OEJN': { lat: 21.64, lng: 39.15 }, // 吉达
     
     // 卡塔尔机场坐标
-    'OTHH': { lat: 25.27, lng: 51.60 }, // 多哈
+    'OTHH': { lat: 25.27, lng: 51.60 }, // 多哈哈马德国际机场
+    'OTBD': { lat: 25.36, lng: 51.55 }, // 多哈旧机场
+    'OTMS': { lat: 25.20, lng: 51.48 }, // 乌姆赛义德军用机场
+    'OTGL': { lat: 25.03, lng: 51.21 },  // 阿尔乌代德空军基地
     
     // 科威特机场坐标
     'OKBK': { lat: 29.37, lng: 47.97 }, // 科威特
@@ -470,62 +477,100 @@ function filterAirportsByCountry(airportsList, countryCode) {
 
 // 随机选择两个不同的机场，确保飞行时间在两小时以上
 function selectRandomRoute() {
-    // 获取用户选择的国家
-    const departureCountryCode = departureCountry.value;
-    const arrivalCountryCode = arrivalCountry.value;
-    
-    // 筛选机场
-    const filteredDepartureAirports = filterAirportsByCountry(airports, departureCountryCode);
-    const filteredArrivalAirports = filterAirportsByCountry(airports, arrivalCountryCode);
-    
-    // 确保有足够的机场可供选择
-    if (filteredDepartureAirports.length === 0 || filteredArrivalAirports.length === 0) {
-        alert('所选国家没有可用的机场，请选择其他国家。');
+    try {
+        // 获取用户选择的国家
+        const departureCountryCode = departureCountry.value || 'all';
+        const arrivalCountryCode = arrivalCountry.value || 'all';
+        
+        // 筛选机场
+        const filteredDepartureAirports = filterAirportsByCountry(airports, departureCountryCode);
+        const filteredArrivalAirports = filterAirportsByCountry(airports, arrivalCountryCode);
+        
+        // 确保有足够的机场可供选择
+        if (filteredDepartureAirports.length === 0 || filteredArrivalAirports.length === 0) {
+            alert('所选国家没有可用的机场，请选择其他国家。');
+            return null;
+        }
+        
+        // 生成所有可能的航线组合，并计算飞行时间
+        const possibleRoutes = [];
+        for (const departure of filteredDepartureAirports) {
+            // 筛选降落机场，确保起飞机场和降落机场不同
+            let validArrivalAirports = filteredArrivalAirports.filter(airport => airport.code !== departure.code);
+            
+            for (const arrival of validArrivalAirports) {
+                // 确保机场坐标存在
+                if (!airportCoordinates[departure.code] || !airportCoordinates[arrival.code]) {
+                    continue; // 跳过没有坐标的机场
+                }
+                
+                // 计算距离和飞行时间
+                const depCoords = airportCoordinates[departure.code];
+                const arrCoords = airportCoordinates[arrival.code];
+                const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
+                const flightTime = calculateFlightTime(distance, aircraftType.value);
+                
+                // 添加到可能的航线中
+                possibleRoutes.push({
+                    departure,
+                    arrival,
+                    distance,
+                    flightTime
+                });
+            }
+        }
+        
+        if (possibleRoutes.length === 0) {
+            alert('无法生成有效的航线，请尝试调整筛选条件。');
+            return null;
+        }
+        
+        // 根据用户选择的飞行时间范围筛选航线
+        const timeRange = flightTimeRange.value || 'all';
+        let filteredRoutes = possibleRoutes;
+        
+        if (timeRange !== 'all') {
+            filteredRoutes = possibleRoutes.filter(route => {
+                const hours = route.flightTime;
+                switch (timeRange) {
+                    case 'ultrashort':
+                        return hours >= 1 && hours <= 2;
+                    case 'short':
+                        return hours > 2 && hours <= 5;
+                    case 'medium':
+                        return hours > 5 && hours <= 12;
+                    case 'long':
+                        return hours > 12 && hours <= 20;
+                    case 'ultralong':
+                        return hours > 20;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        if (filteredRoutes.length === 0) {
+            alert('没有找到符合所选飞行时间范围的航线，请尝试其他时间范围。');
+            return null;
+        }
+        
+        // 从筛选后的航线中随机选择一条
+        const selectedRoute = filteredRoutes[Math.floor(Math.random() * filteredRoutes.length)];
+        const formattedTime = formatFlightTime(selectedRoute.flightTime);
+        
+        return {
+            departure: selectedRoute.departure,
+            arrival: selectedRoute.arrival,
+            aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
+            timestamp: new Date().toLocaleString('zh-CN'),
+            distance: Math.round(selectedRoute.distance),
+            flightTime: formattedTime
+        };
+    } catch (error) {
+        console.error('抽签过程中发生错误:', error);
+        alert('抽签过程中发生错误，请刷新页面后重试。');
         return null;
     }
-    
-    // 设置最大尝试次数，避免可能的无限循环
-    const maxAttempts = 100;
-    let attempts = 0;
-    let departure, arrival, distance, flightTime;
-    
-    // 循环直到找到飞行时间超过两小时的航线或达到最大尝试次数
-    do {
-        attempts++;
-        
-        // 确保选择两个不同的机场（如果起飞机场和降落机场的国家相同）
-        if (departureCountryCode === arrivalCountryCode && filteredDepartureAirports.length > 1) {
-            do {
-                departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
-                arrival = filteredArrivalAirports[Math.floor(Math.random() * filteredArrivalAirports.length)];
-            } while (departure.code === arrival.code);
-        } else {
-            departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
-            arrival = filteredArrivalAirports[Math.floor(Math.random() * filteredArrivalAirports.length)];
-        }
-        
-        // 计算飞行距离和时间
-        const depCoords = airportCoordinates[departure.code];
-        const arrCoords = airportCoordinates[arrival.code];
-        distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
-        flightTime = calculateFlightTime(distance, aircraftType.value);
-        
-        // 如果达到最大尝试次数且没有找到符合条件的航线，放宽限制
-        if (attempts >= maxAttempts) {
-            break;
-        }
-    } while (flightTime < 2); // 只接受飞行时间在两小时以上的航线
-    
-    const formattedTime = formatFlightTime(flightTime);
-    
-    return {
-        departure: departure,
-        arrival: arrival,
-        aircraft: aircraftType.options[aircraftType.selectedIndex].text,
-        timestamp: new Date().toLocaleString('zh-CN'),
-        distance: Math.round(distance), // 四舍五入到整数
-        flightTime: formattedTime
-    };
 }
 
 // 国家代码到中文名称的映射
@@ -648,31 +693,39 @@ function displayFlightInfo(route) {
 }
 
 function handleDrawClick() {
-    // 获取随机航线
-    const route = selectRandomRoute();
-    
-    if (!route) {
-        return;
-    }
-    
-    // 更新显示
-    updateAirportDisplay(departureAirport, route.departure);
-    updateAirportDisplay(arrivalAirport, route.arrival);
-    
-    // 在箭头右边显示飞行信息
-    displayFlightInfo(route);
-    
-    // 添加到历史记录
-    addToHistory(route);
-    
-    // 添加按钮动画效果
-    drawBtn.classList.add('btn-secondary');
-    drawBtn.disabled = true;
-    
-    setTimeout(() => {
+    try {
+        // 获取随机航线
+        const route = selectRandomRoute();
+        
+        if (!route) {
+            return;
+        }
+        
+        // 更新显示
+        updateAirportDisplay(departureAirport, route.departure);
+        updateAirportDisplay(arrivalAirport, route.arrival);
+        
+        // 在箭头右边显示飞行信息
+        displayFlightInfo(route);
+        
+        // 添加到历史记录
+        addToHistory(route);
+        
+        // 添加按钮动画效果
+        drawBtn.classList.add('btn-secondary');
+        drawBtn.disabled = true;
+        
+        setTimeout(() => {
+            drawBtn.classList.remove('btn-secondary');
+            drawBtn.disabled = false;
+        }, 1000);
+    } catch (error) {
+        console.error('处理抽签点击事件时出错:', error);
+        alert('操作过程中发生错误，请重试。');
+        // 确保按钮可以再次点击
         drawBtn.classList.remove('btn-secondary');
         drawBtn.disabled = false;
-    }, 1000);
+    }
 }
 
 // 初始化历史记录
@@ -702,6 +755,7 @@ function init() {
     if (!departureCountry.value) departureCountry.value = 'all';
     if (!arrivalCountry.value) arrivalCountry.value = 'all';
     if (!aircraftType.value) aircraftType.value = 'b737-300';
+    if (!flightTimeRange.value) flightTimeRange.value = 'all';
 }
 
 // 页面加载完成后初始化
