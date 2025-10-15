@@ -187,7 +187,17 @@ const arrivalCountry = document.getElementById('arrival-country');
 const aircraftType = document.getElementById('aircraft-type');
 const historyList = document.getElementById('history-list');
 const flightInfo = document.getElementById('flight-info');
-const flightTimeRange = document.getElementById('flight-time-range') || { value: 'all' };
+// 获取DOM元素并确保它们存在
+let flightTimeRange;
+try {
+    flightTimeRange = document.getElementById('flight-time-range');
+    // 如果元素不存在或无法访问，创建一个具有默认值的对象
+    if (!flightTimeRange) {
+        flightTimeRange = { value: 'all' };
+    }
+} catch (e) {
+    flightTimeRange = { value: 'all' };
+}
 
 // 历史记录数组
 let history = [];
@@ -526,27 +536,39 @@ function selectRandomRoute() {
         }
         
         // 根据用户选择的飞行时间范围筛选航线
-        const timeRange = flightTimeRange.value || 'all';
+        let timeRange;
+        try {
+            timeRange = (flightTimeRange && typeof flightTimeRange.value === 'string') ? flightTimeRange.value : 'all';
+        } catch (e) {
+            timeRange = 'all';
+        }
+        
         let filteredRoutes = possibleRoutes;
         
         if (timeRange !== 'all') {
-            filteredRoutes = possibleRoutes.filter(route => {
-                const hours = route.flightTime;
-                switch (timeRange) {
-                    case 'ultrashort':
-                        return hours >= 1 && hours <= 2;
-                    case 'short':
-                        return hours > 2 && hours <= 5;
-                    case 'medium':
-                        return hours > 5 && hours <= 12;
-                    case 'long':
-                        return hours > 12 && hours <= 20;
-                    case 'ultralong':
-                        return hours > 20;
-                    default:
-                        return true;
-                }
-            });
+            try {
+                filteredRoutes = possibleRoutes.filter(route => {
+                    // 确保flightTime是有效的数字
+                    const hours = Number(route.flightTime) || 0;
+                    switch (timeRange) {
+                        case 'ultrashort':
+                            return hours >= 1 && hours <= 2;
+                        case 'short':
+                            return hours > 2 && hours <= 5;
+                        case 'medium':
+                            return hours > 5 && hours <= 12;
+                        case 'long':
+                            return hours > 12 && hours <= 20;
+                        case 'ultralong':
+                            return hours > 20;
+                        default:
+                            return true;
+                    }
+                });
+            } catch (e) {
+                // 如果筛选出错，使用所有可能的航线
+                filteredRoutes = possibleRoutes;
+            }
         }
         
         if (filteredRoutes.length === 0) {
