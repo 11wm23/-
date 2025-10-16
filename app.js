@@ -793,7 +793,7 @@ function updateHistoryDisplay() {
             timeHtml = `
                 <p>第一段时间: ${route.flightTime1}</p>
                 <p>第二段时间: ${route.flightTime2}</p>
-                <p>总时间: ${route.flightTime}（不含中途准备时间）</p>
+                <p>预计飞行时间: ${route.flightTime}（仅计算预计飞行时间）</p>
             `;
             stopoverHtml = `<p><small>中转机场: ${route.stopover.code} - ${route.stopover.name}（${stopoverCountry}）</small></p>`;
         }
