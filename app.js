@@ -207,28 +207,6 @@ try {
 
 // 历史记录数组
 let history = [];
-
-// 统计访问量
-function trackVisit() {
-    // 获取当前日期
-    const today = new Date().toISOString().split('T')[0];
-    
-    // 获取现有访问统计数据
-    let visitsData = JSON.parse(localStorage.getItem('visitStats') || '{"total": 0, "today": 0, "lastVisit": ""}');
-    
-    // 如果是新的一天，重置今日访问次数
-    if (visitsData.lastVisit !== today) {
-        visitsData.today = 0;
-        visitsData.lastVisit = today;
-    }
-    
-    // 增加访问计数
-    visitsData.total++;
-    visitsData.today++;
-    
-    // 保存更新后的统计数据
-    localStorage.setItem('visitStats', JSON.stringify(visitsData));
-}
 let displayHistoryLimit = 10; // 默认显示10条记录
 
 // 为机场添加经纬度数据（估算值）
@@ -1077,9 +1055,6 @@ function toggleHistoryView() {
 
 // 初始化事件监听器
 function init() {
-    // 记录访问量
-    trackVisit();
-    
     // 添加事件监听器
     drawBtn.addEventListener('click', handleDrawClick);
     
