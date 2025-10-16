@@ -53,6 +53,24 @@ body {
     margin-right: auto;
 }
 
+.admin-link {
+    display: inline-block;
+    padding: 5px 15px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.admin-link:hover {
+    background-color: #2980b9;
+    text-decoration: none;
+    color: white;
+}
+
 .copyright {
     margin: 0;
     text-align: center;
@@ -180,6 +198,26 @@ body {
     margin-bottom: 30px;
 }
 
+/* 版权信息 */
+.copyright-info {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #666;
+    font-weight: bold;
+}
+
+.copyright-info span {
+    margin: 0 10px;
+}
+
+.copyright-company {
+    margin-right: 30px !important;
+}
+
 .draw-btn {
     background-color: #663399;
     color: white;
@@ -208,19 +246,42 @@ body {
 }
 
 .history-area h2 {
-    color: #663399;
-    font-size: 1.5rem;
+    color: #333;
     margin-bottom: 15px;
-    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.view-more-btn {
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.view-more-btn:hover {
+    background-color: #0056b3;
 }
 
 .history-list {
-    max-height: 200px;
+    max-height: 400px;
     overflow-y: auto;
     background-color: #f9f5ff;
     border: 2px solid #e6ccff;
     border-radius: 10px;
-    padding: 15px;
+    padding: 20px;
 }
 
 .no-history {

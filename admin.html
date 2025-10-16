@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航线抽签器 - 管理后台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .admin-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .admin-section h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        
+        .full-history {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            transition: background-color 0.3s;
+        }
+        
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .export-data {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>航线抽签器 - 管理后台</h1>
+            <p>访问统计与历史记录管理</p>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-label">总访问次数</div>
+                <div id="total-visits" class="stat-number">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">今日访问次数</div>
+                <div id="today-visits" class="stat-number">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">历史记录总数</div>
+                <div id="total-history" class="stat-number">0</div>
+            </div>
+        </div>
+        
+        <!-- 历史记录管理 -->
+        <div class="admin-section">
+            <div class="history-controls">
+                <h2>所有历史记录</h2>
+                <div class="admin-actions">
+                    <button id="clear-history" class="btn btn-danger">清空历史记录</button>
+                    <button id="export-history" class="btn btn-primary">导出历史记录</button>
+                </div>
+            </div>
+            
+            <div id="full-history" class="full-history">
+                <p class="no-history">暂无历史记录</p>
+            </div>
+        </div>
+        
+        <!-- 导出数据区域 -->
+        <div class="admin-section export-data">
+            <h3>导出数据</h3>
+            <p>点击上方的"导出历史记录"按钮，可将所有历史记录导出为JSON文件。</p>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">返回航线抽签器</a>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const totalVisitsElement = document.getElementById('total-visits');
+        const todayVisitsElement = document.getElementById('today-visits');
+        const totalHistoryElement = document.getElementById('total-history');
+        const fullHistoryElement = document.getElementById('full-history');
+        const clearHistoryButton = document.getElementById('clear-history');
+        const exportHistoryButton = document.getElementById('export-history');
+        
+        // 国家映射（从app.js复制）
+        const countryMap = {
+            'china': '中国',
+            'japan': '日本',
+            'korea': '韩国',
+            'thailand': '泰国',
+            'singapore': '新加坡',
+            'india': '印度',
+            'uae': '阿联酋',
+            'uk': '英国',
+            'france': '法国',
+            'germany': '德国',
+            'spain': '西班牙',
+            'netherlands': '荷兰',
+            'switzerland': '瑞士',
+            'turkey': '土耳其',
+            'italy': '意大利',
+            'russia': '俄罗斯',
+            'usa': '美国',
+            'canada': '加拿大',
+            'australia': '澳大利亚',
+            'newzealand': '新西兰',
+            'brazil': '巴西',
+            'argentina': '阿根廷',
+            'colombia': '哥伦比亚',
+            'mexico': '墨西哥',
+            'southafrica': '南非',
+            'saudiarabia': '沙特阿拉伯',
+            'qatar': '卡塔尔',
+            'kuwait': '科威特',
+            'bahrain': '巴林'
+        };
+        
+        // 加载访问统计
+        function loadVisitStats() {
+            // 获取访问统计数据
+            const visitsData = JSON.parse(localStorage.getItem('visitStats') || '{"total": 0, "today": 0, "lastVisit": ""}');
+            
+            // 显示统计数据
+            totalVisitsElement.textContent = visitsData.total;
+            todayVisitsElement.textContent = visitsData.today;
+        }
+        
+        // 加载并显示所有历史记录
+        function loadAndDisplayHistory() {
+            // 从localStorage加载历史记录
+            const history = JSON.parse(localStorage.getItem('flightDrawHistory') || '[]');
+            
+            // 更新历史记录总数
+            totalHistoryElement.textContent = history.length;
+            
+            // 如果没有历史记录
+            if (history.length === 0) {
+                fullHistoryElement.innerHTML = '<p class="no-history">暂无历史记录</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            // 遍历所有历史记录
+            history.forEach((route, index) => {
+                let routeHtml = `${route.departure.code} → ${route.arrival.code}`;
+                let routeNameHtml = `${route.departure.name} → ${route.arrival.name}`;
+                let distanceHtml = `<p>飞行距离: ${route.distance} km</p>`;
+                let timeHtml = `<p>预计飞行时间: ${route.flightTime}</p>`;
+                let stopoverHtml = '';
+                
+                if (route.stopover) {
+                    const stopoverCountry = countryMap[route.stopover.country] || route.stopover.country;
+                    routeHtml = `${route.departure.code} → ${route.stopover.code} → ${route.arrival.code}`;
+                    routeNameHtml = `${route.departure.name} → ${route.stopover.name}（${stopoverCountry}）→ ${route.arrival.name}`;
+                    distanceHtml = `
+                        <p>第一段距离: ${route.distance1} km</p>
+                        <p>第二段距离: ${route.distance2} km</p>
+                        <p>总飞行距离: ${route.totalDistance} km</p>
+                    `;
+                    timeHtml = `
+                        <p>第一段时间: ${route.flightTime1}</p>
+                        <p>第二段时间: ${route.flightTime2}</p>
+                        <p>预计飞行时间: ${route.flightTime}（仅计算预计飞行时间）</p>
+                    `;
+                    stopoverHtml = `<p><small>中转机场: ${route.stopover.code} - ${route.stopover.name}（${stopoverCountry}）</small></p>`;
+                }
+                
+                html += `
+                    <div class="history-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <p><strong>记录 ${index + 1}:</strong> ${routeHtml}</p>
+                            <p class="timestamp">${route.timestamp}</p>
+                        </div>
+                        <p>${routeNameHtml}</p>
+                        ${stopoverHtml}
+                        <p>机型: ${route.aircraft}</p>
+                        ${distanceHtml}
+                        ${timeHtml}
+                    </div>
+                `;
+            });
+            
+            fullHistoryElement.innerHTML = html;
+        }
+        
+        // 清空历史记录
+        clearHistoryButton.addEventListener('click', function() {
+            if (confirm('确定要清空所有历史记录吗？此操作不可恢复！')) {
+                localStorage.removeItem('flightDrawHistory');
+                loadAndDisplayHistory();
+                alert('历史记录已清空');
+            }
+        });
+        
+        // 导出历史记录为JSON文件
+        exportHistoryButton.addEventListener('click', function() {
+            const history = JSON.parse(localStorage.getItem('flightDrawHistory') || '[]');
+            
+            if (history.length === 0) {
+                alert('没有历史记录可以导出');
+                return;
+            }
+            
+            // 创建JSON字符串
+            const jsonString = JSON.stringify(history, null, 2);
+            
+            // 创建Blob对象
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            // 创建下载链接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `flight-history-${new Date().toISOString().split('T')[0]}.json`;
+            
+            // 触发下载
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        // 初始化
+        function init() {
+            loadVisitStats();
+            loadAndDisplayHistory();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

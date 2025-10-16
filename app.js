@@ -208,6 +208,29 @@ try {
 // 历史记录数组
 let history = [];
 
+// 统计访问量
+function trackVisit() {
+    // 获取当前日期
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 获取现有访问统计数据
+    let visitsData = JSON.parse(localStorage.getItem('visitStats') || '{"total": 0, "today": 0, "lastVisit": ""}');
+    
+    // 如果是新的一天，重置今日访问次数
+    if (visitsData.lastVisit !== today) {
+        visitsData.today = 0;
+        visitsData.lastVisit = today;
+    }
+    
+    // 增加访问计数
+    visitsData.total++;
+    visitsData.today++;
+    
+    // 保存更新后的统计数据
+    localStorage.setItem('visitStats', JSON.stringify(visitsData));
+}
+let displayHistoryLimit = 10; // 默认显示10条记录
+
 // 为机场添加经纬度数据（估算值）
 const airportCoordinates = {
     // 中国机场坐标
@@ -826,8 +849,8 @@ function addToHistory(route) {
     // 添加到历史记录数组
     history.unshift(route); // 最新的记录放在最前面
     
-    // 限制历史记录数量
-    if (history.length > 10) {
+    // 限制历史记录数量，最多保存100条
+    if (history.length > 100) {
         history.pop();
     }
     
@@ -846,7 +869,10 @@ function updateHistoryDisplay() {
     }
     
     let html = '';
-    history.forEach((route, index) => {
+    // 只显示设定数量的历史记录
+    const displayHistory = history.slice(0, displayHistoryLimit);
+    
+    displayHistory.forEach((route, index) => {
         let routeHtml = `${route.departure.code} → ${route.arrival.code}`;
         let routeNameHtml = `${route.departure.name} → ${route.arrival.name}`;
         let distanceHtml = `<p>飞行距离: ${route.distance} km</p>`;
@@ -911,7 +937,7 @@ function displayFlightInfo(route) {
                 firstSegmentInfo.innerHTML = `
                     <p class="segment-label">第一段飞行</p>
                     <p class="distance">距离: ${route.distance1} km</p>
-                    <p class="time">预计时间: ${route.flightTime1}</p>
+                    <p class="time">预计飞行时间: ${route.flightTime1}</p>
                 `;
                 firstSegmentInfo.style.opacity = '1';
             }, 300);
@@ -923,7 +949,7 @@ function displayFlightInfo(route) {
                 secondSegmentInfo.innerHTML = `
                     <p class="segment-label">第二段飞行</p>
                     <p class="distance">距离: ${route.distance2} km</p>
-                    <p class="time">预计时间: ${route.flightTime2}</p>
+                    <p class="time">预计飞行时间: ${route.flightTime2}</p>
                 `;
                 secondSegmentInfo.style.opacity = '1';
             }, 300);
@@ -935,7 +961,7 @@ function displayFlightInfo(route) {
                 totalFlightInfo.innerHTML = `
                     <p class="segment-label">全程信息</p>
                     <p class="distance">总飞行距离: ${route.totalDistance} km</p>
-                    <p class="time">预计时间: ${route.flightTime}（仅计算飞行时间）</p>
+                    <p class="time">预计总飞行时间: ${route.flightTime}（仅计算飞行时间）</p>
                 `;
                 totalFlightInfo.style.opacity = '1';
             }, 300);
@@ -1015,16 +1041,45 @@ function initHistory() {
     const savedHistory = localStorage.getItem('flightDrawHistory');
     if (savedHistory) {
         history = JSON.parse(savedHistory);
-        // 只保留最近10条历史记录
-        if (history.length > 10) {
-            history = history.slice(0, 10);
+        // 最多保存100条历史记录，但默认显示10条
+        if (history.length > 100) {
+            history = history.slice(0, 100);
         }
         updateHistoryDisplay();
     }
+    
+    // 添加查看更多按钮事件监听
+    const viewMoreBtn = document.getElementById('view-more-history');
+    if (viewMoreBtn) {
+        viewMoreBtn.addEventListener('click', toggleHistoryView);
+    }
+}
+
+// 切换历史记录显示数量的函数
+function toggleHistoryView() {
+    const viewMoreBtn = document.getElementById('view-more-history');
+    const historyTitle = document.querySelector('.history-area h2');
+    
+    if (displayHistoryLimit === 10) {
+        // 切换到显示100条记录
+        displayHistoryLimit = 100;
+        viewMoreBtn.textContent = '查看最近十条';
+        historyTitle.textContent = '历史记录（显示最近一百条）';
+    } else {
+        // 切换回显示10条记录
+        displayHistoryLimit = 10;
+        viewMoreBtn.textContent = '查看更多记录';
+        historyTitle.textContent = '历史记录（仅显示最近十条）';
+    }
+    
+    updateHistoryDisplay();
 }
 
 // 初始化事件监听器
 function init() {
+    // 记录访问量
+    trackVisit();
+    
     // 添加事件监听器
     drawBtn.addEventListener('click', handleDrawClick);
     
@@ -1032,6 +1087,12 @@ function init() {
         if (includeStopover) {
             includeStopover.addEventListener('change', function() {
                 if (this.value === 'yes') {
+                    // 检查是否已选择超短途时间
+                    if (flightTimeRange && flightTimeRange.value === 'ultrashort') {
+                        alert('超短途时间不可增加中转机场');
+                        this.value = 'no';
+                        return;
+                    }
                 stopoverContainer.style.display = 'block';
                 // 显示中转机场国家选择器
                 if (stopoverCountryContainer) {
