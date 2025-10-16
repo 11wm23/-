@@ -393,10 +393,10 @@ const aircraftData = {
     'b787-8': { cruiseSpeed: 905, climbFactor: 1.06 },
     'b787-9': { cruiseSpeed: 910, climbFactor: 1.06 },
     'b787-10': { cruiseSpeed: 915, climbFactor: 1.05 },
-    'b797': { cruiseSpeed: 885, climbFactor: 1.06 },
     
     // 空客系列
-    'a319': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a318': { cruiseSpeed: 825, climbFactor: 1.06 },
+    'a319ceo': { cruiseSpeed: 830, climbFactor: 1.06 },
     'a320': { cruiseSpeed: 830, climbFactor: 1.06 },
     'a320neo': { cruiseSpeed: 835, climbFactor: 1.05 },
     'a321': { cruiseSpeed: 830, climbFactor: 1.06 },
@@ -498,9 +498,13 @@ function selectRandomRoute() {
         const departureCountryCode = departureCountry.value || 'all';
         const arrivalCountryCode = arrivalCountry.value || 'all';
         
-        // 筛选机场
-        const filteredDepartureAirports = filterAirportsByCountry(airports, departureCountryCode);
-        const filteredArrivalAirports = filterAirportsByCountry(airports, arrivalCountryCode);
+        // 筛选机场并去重
+        const filteredDepartureAirports = filterAirportsByCountry(airports, departureCountryCode).filter((airport, index, self) =>
+            index === self.findIndex(a => a.code === airport.code)
+        );
+        const filteredArrivalAirports = filterAirportsByCountry(airports, arrivalCountryCode).filter((airport, index, self) =>
+            index === self.findIndex(a => a.code === airport.code)
+        );
         
         // 确保有足够的机场可供选择
         if (filteredDepartureAirports.length === 0 || filteredArrivalAirports.length === 0) {
@@ -511,174 +515,193 @@ function selectRandomRoute() {
         // 检查是否需要包含中转机场
         const shouldIncludeStopover = includeStopover && includeStopover.value === 'yes';
         
-        // 生成所有可能的航线组合，并计算飞行时间
-        const possibleRoutes = [];
+        // 获取用户选择的时间范围
+        const timeRange = flightTimeRange ? flightTimeRange.value : 'all';
         
         if (shouldIncludeStopover) {
-            // 包含中转机场的航线生成
-            for (const departure of filteredDepartureAirports) {
+            // 优化的中转航线选择算法
+            // 直接随机选择机场并验证，而不是生成所有可能的组合
+            const maxAttempts = 1000; // 最大尝试次数，防止无限循环
+            let attempts = 0;
+            
+            while (attempts < maxAttempts) {
+                attempts++;
+                
+                // 随机选择起飞机场
+                const departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
+                if (!departure || !airportCoordinates[departure.code]) continue;
+                
                 // 获取用户选择的中转机场国家
                 const stopoverCountryCode = stopoverCountry ? stopoverCountry.value || 'all' : 'all';
-                // 筛选中转机场，考虑国家选择和起飞机场
+                // 筛选中转机场并去重
                 const possibleStopoverAirports = airports.filter(airport => 
                     airport.code !== departure.code && 
                     airportCoordinates[airport.code] &&
                     (stopoverCountryCode === 'all' || airport.country === stopoverCountryCode)
+                ).filter((airport, index, self) =>
+                    index === self.findIndex(a => a.code === airport.code)
                 );
                 
-                for (const stopover of possibleStopoverAirports) {
-                    // 筛选降落机场，确保与起飞机场和中转机场都不同
-                    let validArrivalAirports = filteredArrivalAirports.filter(airport => 
-                        airport.code !== departure.code && airport.code !== stopover.code
-                    );
+                if (possibleStopoverAirports.length === 0) continue;
+                
+                // 随机选择中转机场
+                const stopover = possibleStopoverAirports[Math.floor(Math.random() * possibleStopoverAirports.length)];
+                if (!stopover || !airportCoordinates[stopover.code]) continue;
+                
+                // 筛选降落机场，确保与起飞机场和中转机场都不同并去重
+                const validArrivalAirports = filteredArrivalAirports.filter(airport => 
+                    airport.code !== departure.code && airport.code !== stopover.code && airportCoordinates[airport.code]
+                ).filter((airport, index, self) =>
+                    index === self.findIndex(a => a.code === airport.code)
+                );
+                
+                if (validArrivalAirports.length === 0) continue;
+                
+                // 随机选择降落机场
+                const arrival = validArrivalAirports[Math.floor(Math.random() * validArrivalAirports.length)];
+                if (!arrival || !airportCoordinates[arrival.code]) continue;
+                
+                // 计算飞行数据
+                const depCoords = airportCoordinates[departure.code];
+                const stopoverCoords = airportCoordinates[stopover.code];
+                const arrCoords = airportCoordinates[arrival.code];
+                
+                const distance1 = calculateDistance(depCoords.lat, depCoords.lng, stopoverCoords.lat, stopoverCoords.lng);
+                const flightTime1 = calculateFlightTime(distance1, aircraftType.value);
+                
+                const distance2 = calculateDistance(stopoverCoords.lat, stopoverCoords.lng, arrCoords.lat, arrCoords.lng);
+                const flightTime2 = calculateFlightTime(distance2, aircraftType.value);
+                
+                const totalDistance = distance1 + distance2;
+                const totalFlightTime = flightTime1 + flightTime2;
+                
+                // 检查是否符合时间范围要求
+                if (timeRange !== 'all') {
+                    const hours = totalFlightTime;
+                    let inRange = false;
                     
-                    for (const arrival of validArrivalAirports) {
-                        // 确保所有机场坐标都存在
-                        if (!airportCoordinates[departure.code] || !airportCoordinates[stopover.code] || !airportCoordinates[arrival.code]) {
-                            continue;
-                        }
-                        
-                        // 计算第一段（起飞机场到中转机场）的距离和时间
-                        const depCoords = airportCoordinates[departure.code];
-                        const stopoverCoords = airportCoordinates[stopover.code];
-                        const distance1 = calculateDistance(depCoords.lat, depCoords.lng, stopoverCoords.lat, stopoverCoords.lng);
-                        const flightTime1 = calculateFlightTime(distance1, aircraftType.value);
-                        
-                        // 计算第二段（中转机场到降落机场）的距离和时间
-                        const arrCoords = airportCoordinates[arrival.code];
-                        const distance2 = calculateDistance(stopoverCoords.lat, stopoverCoords.lng, arrCoords.lat, arrCoords.lng);
-                        const flightTime2 = calculateFlightTime(distance2, aircraftType.value);
-                        
-                        // 计算总距离和总时间（仅包含飞行时间）
-                        const totalDistance = distance1 + distance2;
-                        const totalFlightTime = flightTime1 + flightTime2; // 仅计算飞行时间
-                        
-                        // 添加到可能的航线中
-                        possibleRoutes.push({
-                            departure,
-                            stopover,
-                            arrival,
-                            distance1,
-                            distance2,
-                            totalDistance,
-                            flightTime1,
-                            flightTime2,
-                            totalFlightTime
-                        });
+                    switch (timeRange) {
+                        case 'short':
+                            inRange = hours > 2 && hours <= 5;
+                            break;
+                        case 'medium':
+                            inRange = hours > 5 && hours <= 12;
+                            break;
+                        case 'long':
+                            inRange = hours > 12 && hours <= 20;
+                            break;
+                        case 'ultralong':
+                            inRange = hours > 20;
+                            break;
+                        default:
+                            inRange = true;
                     }
+                    
+                    if (!inRange) continue;
                 }
+                
+                // 格式化时间
+                const formattedTime1 = formatFlightTime(flightTime1);
+                const formattedTime2 = formatFlightTime(flightTime2);
+                const formattedTotalTime = formatFlightTime(totalFlightTime);
+                
+                // 返回有效的航线
+                return {
+                    departure,
+                    stopover,
+                    arrival,
+                    aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
+                    timestamp: new Date().toLocaleString('zh-CN'),
+                    distance1: Math.round(distance1),
+                    distance2: Math.round(distance2),
+                    totalDistance: Math.round(totalDistance),
+                    flightTime1: formattedTime1,
+                    flightTime2: formattedTime2,
+                    flightTime: formattedTotalTime // 保留flightTime作为总时间的别名
+                };
             }
+            
+            // 如果达到最大尝试次数仍未找到合适的航线
+            alert('未找到符合条件的中转航线，请尝试调整筛选条件。');
+            return null;
         } else {
             // 直飞航线生成
-            for (const departure of filteredDepartureAirports) {
-                // 筛选降落机场，确保起飞机场和降落机场不同
-                let validArrivalAirports = filteredArrivalAirports.filter(airport => airport.code !== departure.code);
+            // 同样优化为直接随机选择并验证
+            const maxAttempts = 1000;
+            let attempts = 0;
+            
+            while (attempts < maxAttempts) {
+                attempts++;
                 
-                for (const arrival of validArrivalAirports) {
-                    // 确保机场坐标存在
-                    if (!airportCoordinates[departure.code] || !airportCoordinates[arrival.code]) {
-                        continue; // 跳过没有坐标的机场
-                    }
+                // 随机选择起飞机场和降落机场
+                const departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
+                let validArrivalAirports = filteredArrivalAirports.filter(airport => 
+                    airport.code !== departure.code && airportCoordinates[airport.code]
+                );
+                
+                if (validArrivalAirports.length === 0) continue;
+                
+                const arrival = validArrivalAirports[Math.floor(Math.random() * validArrivalAirports.length)];
+                
+                // 确保机场坐标存在
+                if (!airportCoordinates[departure.code]) continue;
+                
+                // 计算距离和飞行时间
+                const depCoords = airportCoordinates[departure.code];
+                const arrCoords = airportCoordinates[arrival.code];
+                const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
+                const flightTime = calculateFlightTime(distance, aircraftType.value);
+                
+                // 检查是否符合时间范围要求
+                if (timeRange !== 'all') {
+                    const hours = flightTime;
+                    let inRange = false;
                     
-                    // 计算距离和飞行时间
-                    const depCoords = airportCoordinates[departure.code];
-                    const arrCoords = airportCoordinates[arrival.code];
-                    const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
-                    const flightTime = calculateFlightTime(distance, aircraftType.value);
-                    
-                    // 添加到可能的航线中
-                    possibleRoutes.push({
-                        departure,
-                        arrival,
-                        distance,
-                        flightTime
-                    });
-                }
-            }
-        }
-        
-        if (possibleRoutes.length === 0) {
-            alert('无法生成有效的航线，请尝试调整筛选条件。');
-            return null;
-        }
-        
-        // 根据用户选择的飞行时间范围筛选航线
-        let timeRange;
-        try {
-            timeRange = (flightTimeRange && typeof flightTimeRange.value === 'string') ? flightTimeRange.value : 'all';
-        } catch (e) {
-            timeRange = 'all';
-        }
-        
-        let filteredRoutes = possibleRoutes;
-        
-        if (timeRange !== 'all') {
-            try {
-                filteredRoutes = possibleRoutes.filter(route => {
-                    // 根据是否有中转机场选择相应的时间字段
-                    const hours = Number(route.totalFlightTime || route.flightTime) || 0;
                     switch (timeRange) {
                         case 'ultrashort':
-                            return hours >= 1 && hours <= 2;
+                            inRange = hours >= 1 && hours <= 2;
+                            break;
                         case 'short':
-                            return hours > 2 && hours <= 5;
+                            inRange = hours > 2 && hours <= 5;
+                            break;
                         case 'medium':
-                            return hours > 5 && hours <= 12;
+                            inRange = hours > 5 && hours <= 12;
+                            break;
                         case 'long':
-                            return hours > 12 && hours <= 20;
+                            inRange = hours > 12 && hours <= 20;
+                            break;
                         case 'ultralong':
-                            return hours > 20;
+                            inRange = hours > 20;
+                            break;
                         default:
-                            return true;
+                            inRange = true;
                     }
-                });
-            } catch (e) {
-                // 如果筛选出错，使用所有可能的航线
-                filteredRoutes = possibleRoutes;
+                    
+                    if (!inRange) continue;
+                }
+                
+                // 格式化时间
+                const formattedTime = formatFlightTime(flightTime);
+                
+                // 返回有效的航线
+                return {
+                    departure,
+                    arrival,
+                    aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
+                    timestamp: new Date().toLocaleString('zh-CN'),
+                    distance: Math.round(distance),
+                    flightTime: formattedTime
+                };
             }
-        }
-        
-        if (filteredRoutes.length === 0) {
-            alert('没有找到符合所选飞行时间范围的航线，请尝试其他时间范围。');
+            
+            // 如果达到最大尝试次数仍未找到合适的航线
+            alert('未找到符合条件的直飞航线，请尝试调整筛选条件。');
             return null;
         }
-        
-        // 从筛选后的航线中随机选择一条
-        const selectedRoute = filteredRoutes[Math.floor(Math.random() * filteredRoutes.length)];
-        
-        // 格式化时间
-        if (selectedRoute.stopover) {
-            // 有中转机场的情况
-            const formattedTime1 = formatFlightTime(selectedRoute.flightTime1);
-            const formattedTime2 = formatFlightTime(selectedRoute.flightTime2);
-            const formattedTotalTime = formatFlightTime(selectedRoute.totalFlightTime);
-            
-            return {
-                departure: selectedRoute.departure,
-                stopover: selectedRoute.stopover,
-                arrival: selectedRoute.arrival,
-                aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
-                timestamp: new Date().toLocaleString('zh-CN'),
-                distance1: Math.round(selectedRoute.distance1),
-                distance2: Math.round(selectedRoute.distance2),
-                totalDistance: Math.round(selectedRoute.totalDistance),
-                flightTime1: formattedTime1,
-                flightTime2: formattedTime2,
-                flightTime: formattedTotalTime // 保留flightTime作为总时间的别名
-            };
-        } else {
-            // 直飞情况
-            const formattedTime = formatFlightTime(selectedRoute.flightTime);
-            
-            return {
-                departure: selectedRoute.departure,
-                arrival: selectedRoute.arrival,
-                aircraft: aircraftType.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType.value,
-                timestamp: new Date().toLocaleString('zh-CN'),
-                distance: Math.round(selectedRoute.distance),
-                flightTime: formattedTime
-            };
-        }
+        // 函数已在中转和直飞的条件分支中返回结果或提示信息
+        // 这里作为最后的安全保障
+        alert('无法生成有效的航线，请刷新页面后重试。');
+        return null;
     } catch (error) {
         console.error('抽签过程中发生错误:', error);
         alert('抽签过程中发生错误，请刷新页面后重试。');
@@ -788,7 +811,7 @@ function updateHistoryDisplay() {
             distanceHtml = `
                 <p>第一段距离: ${route.distance1} km</p>
                 <p>第二段距离: ${route.distance2} km</p>
-                <p>总距离: ${route.totalDistance} km</p>
+                <p>总飞行距离: ${route.totalDistance} km</p>
             `;
             timeHtml = `
                 <p>第一段时间: ${route.flightTime1}</p>
@@ -862,7 +885,7 @@ function displayFlightInfo(route) {
             setTimeout(() => {
                 totalFlightInfo.innerHTML = `
                     <p class="segment-label">全程信息</p>
-                    <p class="distance">总距离: ${route.totalDistance} km</p>
+                    <p class="distance">总飞行距离: ${route.totalDistance} km</p>
                     <p class="time">预计时间: ${route.flightTime}（仅计算飞行时间）</p>
                 `;
                 totalFlightInfo.style.opacity = '1';
