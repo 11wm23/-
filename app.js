@@ -184,6 +184,8 @@ const departureAirport = document.getElementById('departure-airport');
 const arrivalAirport = document.getElementById('arrival-airport');
 const departureCountry = document.getElementById('departure-country');
 const arrivalCountry = document.getElementById('arrival-country');
+const stopoverCountry = document.getElementById('stopover-country');
+const stopoverCountryContainer = document.getElementById('stopover-country-container');
 const aircraftType = document.getElementById('aircraft-type');
 const historyList = document.getElementById('history-list');
 const flightInfo = document.getElementById('flight-info');
@@ -507,7 +509,7 @@ function selectRandomRoute() {
         }
         
         // 检查是否需要包含中转机场
-        const shouldIncludeStopover = includeStopover && includeStopover.checked;
+        const shouldIncludeStopover = includeStopover && includeStopover.value === 'yes';
         
         // 生成所有可能的航线组合，并计算飞行时间
         const possibleRoutes = [];
@@ -515,9 +517,13 @@ function selectRandomRoute() {
         if (shouldIncludeStopover) {
             // 包含中转机场的航线生成
             for (const departure of filteredDepartureAirports) {
-                // 所有可用的机场都可以作为中转机场（除了起飞机场）
+                // 获取用户选择的中转机场国家
+                const stopoverCountryCode = stopoverCountry ? stopoverCountry.value || 'all' : 'all';
+                // 筛选中转机场，考虑国家选择和起飞机场
                 const possibleStopoverAirports = airports.filter(airport => 
-                    airport.code !== departure.code && airportCoordinates[airport.code]
+                    airport.code !== departure.code && 
+                    airportCoordinates[airport.code] &&
+                    (stopoverCountryCode === 'all' || airport.country === stopoverCountryCode)
                 );
                 
                 for (const stopover of possibleStopoverAirports) {
@@ -951,10 +957,14 @@ function init() {
     drawBtn.addEventListener('click', handleDrawClick);
     
     // 中转机场选项变化时的处理
-    if (includeStopover) {
-        includeStopover.addEventListener('change', function() {
-            if (this.checked) {
+        if (includeStopover) {
+            includeStopover.addEventListener('change', function() {
+                if (this.value === 'yes') {
                 stopoverContainer.style.display = 'block';
+                // 显示中转机场国家选择器
+                if (stopoverCountryContainer) {
+                    stopoverCountryContainer.style.display = 'block';
+                }
                 // 为机场卡片添加过渡效果
                 if (stopoverAirport) {
                     stopoverAirport.style.transition = 'opacity 0.3s ease-in-out';
@@ -979,6 +989,10 @@ function init() {
                 }
             } else {
                 stopoverContainer.style.display = 'none';
+                // 隐藏中转机场国家选择器
+                if (stopoverCountryContainer) {
+                    stopoverCountryContainer.style.display = 'none';
+                }
                 // 显示中间的信息显示区域
                 const middleFlightInfo = document.getElementById('flight-info');
                 if (middleFlightInfo) {
@@ -1009,6 +1023,7 @@ function init() {
     // 确保选择器有默认值
     if (!departureCountry.value) departureCountry.value = 'all';
     if (!arrivalCountry.value) arrivalCountry.value = 'all';
+    if (stopoverCountry && !stopoverCountry.value) stopoverCountry.value = 'all';
     if (!aircraftType.value) aircraftType.value = 'b737-300';
     if (!flightTimeRange.value) flightTimeRange.value = 'all';
     
@@ -1021,12 +1036,17 @@ function init() {
     // 初始化：根据中转选项状态显示或隐藏相应元素
     const middleFlightInfo = document.getElementById('flight-info');
     if (middleFlightInfo) {
-        middleFlightInfo.style.display = includeStopover && includeStopover.checked ? 'none' : 'block';
+        middleFlightInfo.style.display = includeStopover && includeStopover.value === 'yes' ? 'none' : 'block';
         middleFlightInfo.style.transition = 'opacity 0.3s ease-in-out';
     }
     
+    // 初始化：根据中转选项状态显示或隐藏中转机场国家选择器
+    if (stopoverCountryContainer && includeStopover) {
+        stopoverCountryContainer.style.display = includeStopover.value === 'yes' ? 'block' : 'none';
+    }
+    
     // 初始化：根据中转选项状态设置超短途时间选项的可用性
-    if (includeStopover && includeStopover.checked && flightTimeRange) {
+    if (includeStopover && includeStopover.value === 'yes' && flightTimeRange) {
         const ultrashortOption = Array.from(flightTimeRange.options).find(option => option.value === 'ultrashort');
         if (ultrashortOption) {
             ultrashortOption.disabled = true;

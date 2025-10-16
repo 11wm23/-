@@ -161,11 +161,48 @@
                         <option value="long">长途 (12-20小时)</option>
                         <option value="ultralong">超远长途 (20小时以上)</option>
                     </select>
-                    <div class="form-check mt-3 custom-check-container">
-                        <input class="form-check-input custom-checkbox" type="checkbox" id="include-stopover" value="">
-                        <label class="form-check-label custom-checkbox-label" for="include-stopover">
-                            包含中转机场
-                        </label>
+                    <div class="mt-3">
+                        <label for="include-stopover" class="form-label">增加中转机场:</label>
+                        <select id="include-stopover" class="form-select custom-select">
+                            <option value="no">否</option>
+                            <option value="yes">是</option>
+                        </select>
+                    </div>
+                    <!-- 中转机场国家选择器，默认隐藏 -->
+                    <div id="stopover-country-container" style="display: none; margin-top: 15px;">
+                        <label for="stopover-country" class="form-label">选择中转机场国家:</label>
+                        <select id="stopover-country" class="form-select custom-select">
+                            <option value="all">所有国家</option>
+                            <option value="china">中国</option>
+                            <option value="japan">日本</option>
+                            <option value="korea">韩国</option>
+                            <option value="thailand">泰国</option>
+                            <option value="singapore">新加坡</option>
+                            <option value="india">印度</option>
+                            <option value="uae">阿联酋</option>
+                            <option value="uk">英国</option>
+                            <option value="france">法国</option>
+                            <option value="germany">德国</option>
+                            <option value="spain">西班牙</option>
+                            <option value="netherlands">荷兰</option>
+                            <option value="switzerland">瑞士</option>
+                            <option value="turkey">土耳其</option>
+                            <option value="italy">意大利</option>
+                            <option value="russia">俄罗斯</option>
+                            <option value="usa">美国</option>
+                            <option value="canada">加拿大</option>
+                            <option value="australia">澳大利亚</option>
+                            <option value="newzealand">新西兰</option>
+                            <option value="brazil">巴西</option>
+                            <option value="argentina">阿根廷</option>
+                            <option value="colombia">哥伦比亚</option>
+                            <option value="mexico">墨西哥</option>
+                            <option value="southafrica">南非</option>
+                            <option value="saudiarabia">沙特阿拉伯</option>
+                            <option value="qatar">卡塔尔</option>
+                            <option value="kuwait">科威特</option>
+                            <option value="bahrain">巴林</option>
+                        </select>
                     </div>
                 </div>
             </div>
