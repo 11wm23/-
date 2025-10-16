@@ -393,6 +393,24 @@ const aircraftData = {
     'b787-8': { cruiseSpeed: 905, climbFactor: 1.06 },
     'b787-9': { cruiseSpeed: 910, climbFactor: 1.06 },
     'b787-10': { cruiseSpeed: 915, climbFactor: 1.05 },
+    // 新增波音系列机型
+    'b707-320c': { cruiseSpeed: 876, climbFactor: 1.10 },
+    'b727-200': { cruiseSpeed: 867, climbFactor: 1.10 },
+    'b727-200wl': { cruiseSpeed: 870, climbFactor: 1.09 },
+    'b737-100': { cruiseSpeed: 820, climbFactor: 1.08 },
+    'b737-200': { cruiseSpeed: 820, climbFactor: 1.08 },
+    'b737-800bcf': { cruiseSpeed: 835, climbFactor: 1.07 },
+    'b747-200b': { cruiseSpeed: 900, climbFactor: 1.10 },
+    'b747-400f': { cruiseSpeed: 910, climbFactor: 1.09 },
+    'b747-8f': { cruiseSpeed: 915, climbFactor: 1.08 },
+    'b747-8i': { cruiseSpeed: 915, climbFactor: 1.07 },
+    'b757-200f': { cruiseSpeed: 875, climbFactor: 1.07 },
+    'b757-200wl': { cruiseSpeed: 878, climbFactor: 1.06 },
+    'b767-300f': { cruiseSpeed: 860, climbFactor: 1.08 },
+    'b767-400er': { cruiseSpeed: 865, climbFactor: 1.07 },
+    'b777-200lr': { cruiseSpeed: 910, climbFactor: 1.07 },
+    'b777f': { cruiseSpeed: 915, climbFactor: 1.08 },
+    'f/a-18e': { cruiseSpeed: 1915, climbFactor: 1.05 },
     
     // 空客系列
     'a318': { cruiseSpeed: 825, climbFactor: 1.06 },
@@ -409,20 +427,45 @@ const aircraftData = {
     'a350-900': { cruiseSpeed: 910, climbFactor: 1.06 },
     'a350-1000': { cruiseSpeed: 915, climbFactor: 1.06 },
     'a380': { cruiseSpeed: 910, climbFactor: 1.09 },
+    // 新增空客系列机型
+    'a320-200': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a220-300': { cruiseSpeed: 825, climbFactor: 1.06 },
+    'a310-300': { cruiseSpeed: 870, climbFactor: 1.08 },
+    'a321-200': { cruiseSpeed: 830, climbFactor: 1.06 },
+    'a330-200f': { cruiseSpeed: 875, climbFactor: 1.08 },
+    'a330-700l': { cruiseSpeed: 880, climbFactor: 1.07 },
+    'a330-900neo': { cruiseSpeed: 880, climbFactor: 1.06 },
+    'a340-200': { cruiseSpeed: 885, climbFactor: 1.08 },
+    'a380-800': { cruiseSpeed: 910, climbFactor: 1.09 },
     
     // 其他制造商
     'embraer-190': { cruiseSpeed: 830, climbFactor: 1.07 },
     'embraer-e195': { cruiseSpeed: 830, climbFactor: 1.07 },
     'embraer-175': { cruiseSpeed: 825, climbFactor: 1.07 },
     'crj-900': { cruiseSpeed: 820, climbFactor: 1.08 },
-    'atr-72': { cruiseSpeed: 500, climbFactor: 1.15 },
+    'atr 72-600': { cruiseSpeed: 500, climbFactor: 1.15 },
     'dhc-8': { cruiseSpeed: 520, climbFactor: 1.12 },
     'tu-204': { cruiseSpeed: 855, climbFactor: 1.09 },
     'il-96': { cruiseSpeed: 875, climbFactor: 1.08 },
     'c919': { cruiseSpeed: 830, climbFactor: 1.06 },
     'comac-c929': { cruiseSpeed: 905, climbFactor: 1.07 },
     'an-124': { cruiseSpeed: 865, climbFactor: 1.10 },
-    'concorde': { cruiseSpeed: 2179, climbFactor: 1.05 }
+    'concorde': { cruiseSpeed: 2179, climbFactor: 1.05 },
+    // 新增其他系列机型
+    'saab-340b': { cruiseSpeed: 460, climbFactor: 1.18 },
+    'bae-146-300': { cruiseSpeed: 765, climbFactor: 1.12 },
+    'cessna-172': { cruiseSpeed: 226, climbFactor: 1.30 },
+    'cirrus-sr22': { cruiseSpeed: 306, climbFactor: 1.25 },
+    'dhc-dash8-q400': { cruiseSpeed: 556, climbFactor: 1.13 },
+    'embraer-190-e2': { cruiseSpeed: 835, climbFactor: 1.06 },
+    'embraer-erj145': { cruiseSpeed: 805, climbFactor: 1.09 },
+    'learjet-35a': { cruiseSpeed: 819, climbFactor: 1.10 },
+    'lockheed-c5b': { cruiseSpeed: 833, climbFactor: 1.15 },
+    'md-11': { cruiseSpeed: 890, climbFactor: 1.08 },
+    'md-11f': { cruiseSpeed: 890, climbFactor: 1.09 },
+    'md-81': { cruiseSpeed: 813, climbFactor: 1.09 },
+    'tupolev-tu154m': { cruiseSpeed: 900, climbFactor: 1.10 },
+    'antonov-an225': { cruiseSpeed: 850, climbFactor: 1.15 }
 };
 
 // 用于兼容旧代码的映射
@@ -598,6 +641,9 @@ function selectRandomRoute() {
                     }
                     
                     if (!inRange) continue;
+                } else {
+                    // 当选择所有时间时，确保飞行时间超过1小时
+                    if (totalFlightTime <= 1) continue;
                 }
                 
                 // 格式化时间
@@ -678,6 +724,9 @@ function selectRandomRoute() {
                     }
                     
                     if (!inRange) continue;
+                } else {
+                    // 当选择所有时间时，确保飞行时间超过1小时
+                    if (flightTime <= 1) continue;
                 }
                 
                 // 格式化时间
