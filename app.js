@@ -549,9 +549,9 @@ function selectRandomRoute() {
                         const distance2 = calculateDistance(stopoverCoords.lat, stopoverCoords.lng, arrCoords.lat, arrCoords.lng);
                         const flightTime2 = calculateFlightTime(distance2, aircraftType.value);
                         
-                        // 计算总距离和总时间（总时间包含1小时中转时间）
+                        // 计算总距离和总时间（仅包含飞行时间）
                         const totalDistance = distance1 + distance2;
-                        const totalFlightTime = flightTime1 + flightTime2 + 1; // 加1小时中转时间
+                        const totalFlightTime = flightTime1 + flightTime2; // 仅计算飞行时间
                         
                         // 添加到可能的航线中
                         possibleRoutes.push({
@@ -793,7 +793,7 @@ function updateHistoryDisplay() {
             timeHtml = `
                 <p>第一段时间: ${route.flightTime1}</p>
                 <p>第二段时间: ${route.flightTime2}</p>
-                <p>总时间: ${route.flightTime}（含1小时中转）</p>
+                <p>总时间: ${route.flightTime}（不含中途准备时间）</p>
             `;
             stopoverHtml = `<p><small>中转机场: ${route.stopover.code} - ${route.stopover.name}（${stopoverCountry}）</small></p>`;
         }
@@ -839,7 +839,7 @@ function displayFlightInfo(route) {
                 firstSegmentInfo.innerHTML = `
                     <p class="segment-label">第一段飞行</p>
                     <p class="distance">距离: ${route.distance1} km</p>
-                    <p class="time">时间: ${route.flightTime1}</p>
+                    <p class="time">预计时间: ${route.flightTime1}</p>
                 `;
                 firstSegmentInfo.style.opacity = '1';
             }, 300);
@@ -851,7 +851,7 @@ function displayFlightInfo(route) {
                 secondSegmentInfo.innerHTML = `
                     <p class="segment-label">第二段飞行</p>
                     <p class="distance">距离: ${route.distance2} km</p>
-                    <p class="time">时间: ${route.flightTime2}</p>
+                    <p class="time">预计时间: ${route.flightTime2}</p>
                 `;
                 secondSegmentInfo.style.opacity = '1';
             }, 300);
@@ -863,7 +863,7 @@ function displayFlightInfo(route) {
                 totalFlightInfo.innerHTML = `
                     <p class="segment-label">全程信息</p>
                     <p class="distance">总距离: ${route.totalDistance} km</p>
-                    <p class="time">总时间: ${route.flightTime}</p>
+                    <p class="time">预计时间: ${route.flightTime}（仅计算飞行时间）</p>
                 `;
                 totalFlightInfo.style.opacity = '1';
             }, 300);
