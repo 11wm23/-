@@ -1047,7 +1047,7 @@ function toggleHistoryView() {
         // 切换回显示10条记录
         displayHistoryLimit = 10;
         viewMoreBtn.textContent = '查看更多记录';
-        historyTitle.textContent = '历史记录（仅显示最近十条）';
+        historyTitle.textContent = '历史记录（显示最近十条）';
     }
     
     updateHistoryDisplay();
