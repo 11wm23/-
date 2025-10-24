@@ -1,4 +1,165 @@
 // 机场数据 - 包含全球主要机场和国家信息
+// 更新访问量统计UI显示
+function updateVisitStatsUI(visitData) {
+    // 计算与昨日的比较百分比
+    let changeText = '0.00%';
+    let changeColor = '#6c757d'; // 默认灰色
+    
+    if (visitData.yesterdayCount > 0) {
+        // 重新计算百分比，确保得到精确的小数结果
+        const rawChange = (visitData.todayCount - visitData.yesterdayCount) / visitData.yesterdayCount;
+        const changePercent = rawChange * 100;
+        // 确保正负号正确且固定显示两位小数
+        const formattedPercent = changePercent.toFixed(2);
+        changeText = changePercent >= 0 ? '+' + formattedPercent + '%' : formattedPercent + '%';
+        changeColor = changePercent > 0 ? '#28a745' : changePercent < 0 ? '#dc3545' : '#6c757d';
+    } else if (visitData.todayCount > 0) {
+        // 昨日为0但今日有访问量
+        changeText = '∞';
+        changeColor = '#28a745';
+    }
+    
+    // 更新UI显示
+    const todayVisits = document.getElementById('today-visits');
+    const yesterdayVisits = document.getElementById('yesterday-visits');
+    const totalVisits = document.getElementById('total-visits');
+    const changeElement = document.getElementById('compare-change');
+    
+    if (todayVisits) todayVisits.textContent = visitData.todayCount;
+    if (yesterdayVisits) yesterdayVisits.textContent = visitData.yesterdayCount;
+    if (totalVisits) totalVisits.textContent = visitData.totalCount;
+    
+    // 显示变化百分比，包括正负号
+    if (changeElement) {
+        changeElement.textContent = changeText;
+        changeElement.style.color = changeColor;
+    }
+}
+
+// 每日重置访问量数据函数
+function resetDailyVisitStats() {
+    const today = new Date().toDateString();
+    const storage = localStorage;
+    
+    // 获取当前数据
+    let visitData = JSON.parse(storage.getItem('visitStats')) || {
+        lastDate: today,
+        todayCount: 0,
+        yesterdayCount: 0,
+        totalCount: 0
+    };
+    
+    // 将昨日访问量更新为前日的今日访问量，今日访问量重置为0
+    visitData.yesterdayCount = visitData.todayCount;
+    visitData.todayCount = 0;
+    visitData.lastDate = today;
+    
+    // 保存更新后的数据
+    storage.setItem('visitStats', JSON.stringify(visitData));
+    
+    // 更新UI显示
+    updateVisitStatsUI(visitData);
+}
+
+// 设置每日午夜自动重置任务
+function scheduleDailyReset() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // 设置为明天凌晨00:00:00
+    
+    // 计算到下一个午夜的毫秒数
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    // 设置定时器，在午夜执行重置
+    setTimeout(function() {
+        // 执行重置
+        resetDailyVisitStats();
+        
+        // 重新设置下一天的定时器
+        scheduleDailyReset();
+    }, timeUntilMidnight);
+}
+
+// 记录访问量功能（只在页面加载时执行一次）
+function recordVisit() {
+    const today = new Date().toDateString();
+    const storage = localStorage;
+    
+    // 获取存储的数据
+    let visitData = JSON.parse(storage.getItem('visitStats'));
+    
+    // 重置错误的数据或初始化新数据
+    if (!visitData || visitData.totalCount < (visitData.todayCount || 0)) {
+        // 如果数据不存在或逻辑错误，重新初始化
+        visitData = {
+            lastDate: today,
+            todayCount: 1,  // 当前访问算一次
+            yesterdayCount: 0,
+            totalCount: 1   // 总访问量从1开始
+        };
+    } else {
+        // 日期检查逻辑
+        if (visitData.lastDate !== today) {
+            // 如果是新的一天，将昨天的计数保存，并重置今天的计数
+            visitData.yesterdayCount = visitData.todayCount;
+            visitData.todayCount = 1;
+            visitData.lastDate = today;
+        } else {
+            // 如果是同一天，增加今天的访问计数
+            visitData.todayCount++;
+        }
+        
+        // 增加总访问计数
+        visitData.totalCount++;
+    }
+    
+    // 确保所有数据字段都有值
+    visitData.todayCount = visitData.todayCount || 0;
+    visitData.yesterdayCount = visitData.yesterdayCount || 0;
+    visitData.totalCount = visitData.totalCount || 0;
+    
+    // 保存到localStorage
+    storage.setItem('visitStats', JSON.stringify(visitData));
+    
+    // 更新UI显示
+    updateVisitStatsUI(visitData);
+    
+    // 启动每日自动重置任务（仅在首次运行时启动一次）
+    if (!window.dailyResetScheduled) {
+        scheduleDailyReset();
+        window.dailyResetScheduled = true;
+    }
+}
+
+// 初始化访问量数据函数
+function initializeVisitData() {
+    const today = new Date().toDateString();
+    // 检查localStorage中是否已有访问量数据
+    const hasData = localStorage.getItem('visitStats');
+    
+    if (!hasData) {
+        // 首次运行，初始化数据
+        const visitData = {
+            lastDate: today,
+            todayCount: 0,
+            yesterdayCount: 0,
+            totalCount: 0
+        };
+        // 保存到localStorage
+        localStorage.setItem('visitStats', JSON.stringify(visitData));
+    }
+    
+    // 移除可能残留的清空标记，确保访问量可以正常增加
+    localStorage.removeItem('justClearedVisits');
+}
+
+// 初始化数据（只执行一次）
+initializeVisitData();
+
+// 页面加载时记录访问量（恢复正常功能）
+recordVisit();
+
 const airports = [
     // 中国机场
     { code: 'ZBAA', name: '北京首都国际机场', country: 'china' },
@@ -11,7 +172,7 @@ const airports = [
     { code: 'ZSSS', name: '上海虹桥国际机场', country: 'china' },
     { code: 'ZSHC', name: '杭州萧山国际机场', country: 'china' },
     { code: 'ZSNJ', name: '南京禄口国际机场', country: 'china' },
-    { code: 'ZSQD', name: '青岛流亭国际机场', country: 'china' },
+    { code: 'ZSQD', name: '青岛胶东国际机场', country: 'china' },
     { code: 'ZYTX', name: '沈阳桃仙国际机场', country: 'china' },
     { code: 'ZBTJ', name: '天津滨海国际机场', country: 'china' },
     { code: 'ZSAM', name: '厦门高崎国际机场', country: 'china' },
