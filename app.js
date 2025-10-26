@@ -41,24 +41,15 @@ function resetDailyVisitStats() {
     const today = new Date().toDateString();
     const storage = localStorage;
     
-    // 获取当前数据
-    let visitData = JSON.parse(storage.getItem('visitStats')) || {
-        lastDate: today,
-        todayCount: 0,
-        yesterdayCount: 0,
-        totalCount: 0
-    };
+    // 云同步版本：通过API重置每日计数
+    // 这里我们不直接操作云数据，而是通过recordVisit函数触发API调用
+    // 只需要更新本地的lastDate，下次recordVisit会检查并处理重置逻辑
+    let localInfo = JSON.parse(storage.getItem('visitLocalInfo')) || {};
+    localInfo.lastDate = today;
+    storage.setItem('visitLocalInfo', JSON.stringify(localInfo));
     
-    // 将昨日访问量更新为前日的今日访问量，今日访问量重置为0
-    visitData.yesterdayCount = visitData.todayCount;
-    visitData.todayCount = 0;
-    visitData.lastDate = today;
-    
-    // 保存更新后的数据
-    storage.setItem('visitStats', JSON.stringify(visitData));
-    
-    // 更新UI显示
-    updateVisitStatsUI(visitData);
+    // 获取最新的云数据显示
+    fetchVisitStats();
 }
 
 // 设置每日午夜自动重置任务
@@ -81,53 +72,114 @@ function scheduleDailyReset() {
     }, timeUntilMidnight);
 }
 
-// 记录访问量功能（只在页面加载时执行一次）
-function recordVisit() {
+// 从云端获取访问统计数据
+async function fetchVisitStats() {
+    try {
+        // 使用countapi.xyz服务获取统计数据
+        // 我们使用三个不同的计数器分别追踪今日、昨日和总访问量
+        const [todayResponse, yesterdayResponse, totalResponse] = await Promise.all([
+            fetch('https://api.countapi.xyz/get/hkflight/todayvisits'),
+            fetch('https://api.countapi.xyz/get/hkflight/yesterdayvisits'),
+            fetch('https://api.countapi.xyz/get/hkflight/totalvisits')
+        ]);
+        
+        const [todayData, yesterdayData, totalData] = await Promise.all([
+            todayResponse.json(),
+            yesterdayResponse.json(),
+            totalResponse.json()
+        ]);
+        
+        // 构建访问数据对象
+        const visitData = {
+            todayCount: todayData.value || 0,
+            yesterdayCount: yesterdayData.value || 0,
+            totalCount: totalData.value || 0
+        };
+        
+        // 更新UI显示
+        updateVisitStatsUI(visitData);
+        
+        return visitData;
+    } catch (error) {
+        console.error('获取访问统计数据失败:', error);
+        // 出错时使用本地数据作为备份
+        const visitData = {
+            todayCount: 0,
+            yesterdayCount: 0,
+            totalCount: 0
+        };
+        updateVisitStatsUI(visitData);
+        return visitData;
+    }
+}
+
+// 记录访问量功能（使用云同步）
+async function recordVisit() {
     const today = new Date().toDateString();
     const storage = localStorage;
     
-    // 获取存储的数据
-    let visitData = JSON.parse(storage.getItem('visitStats'));
+    // 获取本地信息，用于检查是否需要重置每日计数
+    let localInfo = JSON.parse(storage.getItem('visitLocalInfo')) || {};
     
-    // 重置错误的数据或初始化新数据
-    if (!visitData || visitData.totalCount < (visitData.todayCount || 0)) {
-        // 如果数据不存在或逻辑错误，重新初始化
-        visitData = {
-            lastDate: today,
-            todayCount: 1,  // 当前访问算一次
-            yesterdayCount: 0,
-            totalCount: 1   // 总访问量从1开始
-        };
-    } else {
-        // 日期检查逻辑
-        if (visitData.lastDate !== today) {
-            // 如果是新的一天，将昨天的计数保存，并重置今天的计数
-            visitData.yesterdayCount = visitData.todayCount;
-            visitData.todayCount = 1;
-            visitData.lastDate = today;
+    try {
+        // 检查是否是新的一天，如果是则需要重置每日计数
+        if (localInfo.lastDate !== today) {
+            // 1. 将昨日的今日计数保存到昨日计数
+            await fetch('https://api.countapi.xyz/set/hkflight/yesterdayvisits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: await getTodayCount() })
+            });
+            
+            // 2. 重置今日计数为1
+            await fetch('https://api.countapi.xyz/set/hkflight/todayvisits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: 1 })
+            });
+            
+            // 更新本地记录的日期
+            localInfo.lastDate = today;
+            storage.setItem('visitLocalInfo', JSON.stringify(localInfo));
         } else {
-            // 如果是同一天，增加今天的访问计数
-            visitData.todayCount++;
+            // 如果是同一天，增加今日计数
+            await fetch('https://api.countapi.xyz/hit/hkflight/todayvisits');
         }
         
         // 增加总访问计数
-        visitData.totalCount++;
+        await fetch('https://api.countapi.xyz/hit/hkflight/totalvisits');
+        
+        // 获取更新后的统计数据并显示
+        await fetchVisitStats();
+        
+    } catch (error) {
+        console.error('记录访问量失败:', error);
+        // 出错时使用本地数据作为备份
+        const visitData = {
+            todayCount: 0,
+            yesterdayCount: 0,
+            totalCount: 0
+        };
+        updateVisitStatsUI(visitData);
     }
-    
-    // 确保所有数据字段都有值
-    visitData.todayCount = visitData.todayCount || 0;
-    visitData.yesterdayCount = visitData.yesterdayCount || 0;
-    visitData.totalCount = visitData.totalCount || 0;
-    
-    // 保存到localStorage
-    storage.setItem('visitStats', JSON.stringify(visitData));
-    
-    // 更新UI显示
-    updateVisitStatsUI(visitData);
     
     // 启动每日自动重置任务（仅在首次运行时启动一次）
     if (!window.dailyResetScheduled) {
         scheduleDailyReset();
+    }
+}
+
+// 辅助函数：获取当前的今日访问量
+async function getTodayCount() {
+    try {
+        const response = await fetch('https://api.countapi.xyz/get/hkflight/todayvisits');
+        const data = await response.json();
+        return data.value || 0;
+    } catch (error) {
+        console.error('获取今日访问量失败:', error);
+        return 0;
+    }
+}
         window.dailyResetScheduled = true;
     }
 }
@@ -135,23 +187,20 @@ function recordVisit() {
 // 初始化访问量数据函数
 function initializeVisitData() {
     const today = new Date().toDateString();
-    // 检查localStorage中是否已有访问量数据
-    const hasData = localStorage.getItem('visitStats');
     
-    if (!hasData) {
-        // 首次运行，初始化数据
-        const visitData = {
-            lastDate: today,
-            todayCount: 0,
-            yesterdayCount: 0,
-            totalCount: 0
-        };
-        // 保存到localStorage
-        localStorage.setItem('visitStats', JSON.stringify(visitData));
+    // 检查localStorage中是否已有本地信息
+    const localInfo = JSON.parse(localStorage.getItem('visitLocalInfo')) || {};
+    
+    // 如果没有上次访问日期，初始化它
+    if (!localInfo.lastDate) {
+        localInfo.lastDate = today;
+        localStorage.setItem('visitLocalInfo', JSON.stringify(localInfo));
     }
     
-    // 移除可能残留的清空标记，确保访问量可以正常增加
-    localStorage.removeItem('justClearedVisits');
+    // 初始化时尝试获取云数据显示
+    fetchVisitStats().catch(error => {
+        console.log('初始化时获取云数据失败，将在recordVisit时重试:', error);
+    });
 }
 
 // 初始化数据（只执行一次）
