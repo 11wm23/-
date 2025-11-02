@@ -18,17 +18,14 @@ const airports = [
     { code: 'ZBTJ', name: '天津滨海国际机场', country: 'china' },
     { code: 'ZSAM', name: '厦门高崎国际机场', country: 'china' },
     { code: 'ZUCK', name: '重庆江北国际机场', country: 'china' },
-    { code: "ZBNY", name: "北京南苑机场", country: "中国" },
-    { code: "ZBAA", name: "北京首都国际机场", country: "中国" },
-    { code: "ZBTJ", name: "天津滨海国际机场", country: "中国" },
-    { code: "ZBZJ", name: "张家口宁远机场", country: "中国" },
-    { code: "ZBHD", name: "邯郸机场", country: "中国" },
-    { code: "ZBSH", name: "秦皇岛山海关机场", country: "中国" },
-    { code: "ZBTS", name: "唐山三女河机场", country: "中国" },
-    { code: "ZBXT", name: "邢台褡裢机场", country: "中国" },
-    { code: "ZBSJ", name: "石家庄正定国际机场", country: "中国" },
-    { code: "ZBYN", name: "太原武宿国际机场", country: "中国" },
-    { code: "ZBLL", name: "吕梁机场", country: "中国" },
+    { code: "ZBNY", name: "北京南苑机场", country: "china" },
+    { code: "ZBHD", name: "邯郸机场", country: "china" },
+    { code: "ZBSH", name: "秦皇岛山海关机场", country: "china" },
+    { code: "ZBTS", name: "唐山三女河机场", country: "china" },
+    { code: "ZBXT", name: "邢台褡裢机场", country: "china" },
+    { code: "ZBSJ", name: "石家庄正定国际机场", country: "china" },
+    { code: "ZBYN", name: "太原武宿国际机场", country: "china" },
+    { code: "ZBLL", name: "吕梁机场", country: "china" },
     
     
     // 日本机场
@@ -177,7 +174,44 @@ const airports = [
     { code: 'OKBK', name: '科威特国际机场', country: 'kuwait' },
     
     // 巴林机场
-    { code: 'OBBI', name: '巴林国际机场', country: 'bahrain' }
+    { code: 'OBBI', name: '巴林国际机场', country: 'bahrain' },
+    
+    // 补充中国机场
+    { code: 'ZHHH', name: '武汉天河国际机场', country: 'china' },
+    { code: 'ZGHA', name: '长沙黄花国际机场', country: 'china' },
+    { code: 'ZWOW', name: '乌鲁木齐天山国际机场', country: 'china' },
+    { code: 'ZHCC', name: '郑州新郑国际机场', country: 'china' },
+    { code: 'ZJSY', name: '三亚凤凰国际机场', country: 'china' },
+    { code: 'ZJHK', name: '海口美兰国际机场', country: 'china' },
+    { code: 'ZYTL', name: '大连周水子国际机场', country: 'china' },
+    { code: 'ZYHB', name: '哈尔滨太平国际机场', country: 'china' },
+    { code: 'ZUGY', name: '贵阳龙洞堡国际机场', country: 'china' },
+    { code: 'ZSJZ', name: '石家庄正定国际机场', country: 'china' },
+    { code: 'ZSFG', name: '福州长乐国际机场', country: 'china' },
+    { code: 'ZGNN', name: '南宁吴圩国际机场', country: 'china' },
+    { code: 'ZSJN', name: '济南遥墙国际机场', country: 'china' },
+    { code: 'ZYCC', name: '长春龙嘉国际机场', country: 'china' },
+    { code: 'ZLLL', name: '兰州中川国际机场', country: 'china' },
+    { code: 'ZSNB', name: '宁波栎社国际机场', country: 'china' },
+    { code: 'ZSWZ', name: '温州龙湾国际机场', country: 'china' },
+    { code: 'ZSOF', name: '合肥新桥国际机场', country: 'china' },
+    { code: 'ZSTX', name: '黄山屯溪国际机场', country: 'china' },
+    { code: 'ZSQZ', name: '泉州晋江国际机场', country: 'china' },
+    { code: 'ZSYT', name: '烟台蓬莱国际机场', country: 'china' },
+    { code: 'ZSCN', name: '南昌昌北国际机场', country: 'china' },
+    { code: 'ZBYN', name: '太原武宿国际机场', country: 'china' },
+    { code: 'ZBHH', name: '呼和浩特白塔国际机场', country: 'china' },
+    { code: 'ZBDS', name: '鄂尔多斯伊金霍洛国际机场', country: 'china' },
+    { code: 'ZGKL', name: '桂林两江国际机场', country: 'china' },
+    { code: 'ZSCG', name: '常州奔牛国际机场', country: 'china' },
+    { code: 'ZSNT', name: '南通兴东国际机场', country: 'china' },
+    { code: 'ZSXZ', name: '徐州观音国际机场', country: 'china' },
+    { code: 'ZSVA', name: '扬州泰州国际机场', country: 'china' },
+    { code: 'ZSWX', name: '无锡硕放国际机场', country: 'china' },
+    { code: 'ZGOW', name: '揭阳潮汕国际机场', country: 'china' },
+    { code: 'ZPLJ', name: '丽江三义国际机场', country: 'china' },
+    { code: 'ZLIC', name: '银川河东国际机场', country: 'china' },
+    { code: 'ZYDQ', name: '大庆萨尔图机场', country: 'china' }
 ];
 
 // 获取DOM元素
@@ -391,7 +425,44 @@ const airportCoordinates = {
     'OKBK': { lat: 29.37, lng: 47.97 }, // 科威特
     
     // 巴林机场坐标
-    'OBBI': { lat: 26.28, lng: 50.60 } // 巴林
+    'OBBI': { lat: 26.28, lng: 50.60 }, // 巴林
+    
+    // 补充中国机场坐标
+    'ZHHH': { lat: 30.60, lng: 114.20 }, // 武汉天河
+    'ZGHA': { lat: 28.22, lng: 113.01 }, // 长沙黄花
+    'ZWOW': { lat: 43.90, lng: 87.50 }, // 乌鲁木齐天山国际机场
+    'ZHCC': { lat: 34.53, lng: 113.81 }, // 郑州新郑
+    'ZJSY': { lat: 18.24, lng: 109.51 }, // 三亚凤凰
+    'ZJHK': { lat: 20.02, lng: 110.33 }, // 海口美兰
+    'ZYTL': { lat: 38.93, lng: 121.64 }, // 大连周水子
+    'ZYHB': { lat: 45.81, lng: 126.52 }, // 哈尔滨太平
+    'ZUGY': { lat: 26.51, lng: 106.69 }, // 贵阳龙洞堡
+    'ZSJZ': { lat: 38.12, lng: 114.71 }, // 石家庄正定
+    'ZSFG': { lat: 25.93, lng: 119.60 }, // 福州长乐
+    'ZGNN': { lat: 22.62, lng: 108.17 }, // 南宁吴圩
+    'ZSJN': { lat: 36.98, lng: 117.20 }, // 济南遥墙
+    'ZYCC': { lat: 43.92, lng: 125.41 }, // 长春龙嘉
+    'ZLLL': { lat: 36.35, lng: 103.58 }, // 兰州中川
+    'ZSNB': { lat: 29.80, lng: 121.44 }, // 宁波栎社
+    'ZSWZ': { lat: 27.93, lng: 120.95 }, // 温州龙湾
+    'ZSOF': { lat: 31.75, lng: 117.38 }, // 合肥新桥
+    'ZSTX': { lat: 29.73, lng: 118.30 }, // 黄山屯溪
+    'ZSQZ': { lat: 24.85, lng: 118.58 }, // 泉州晋江
+    'ZSYT': { lat: 37.73, lng: 120.81 }, // 烟台蓬莱
+    'ZSCN': { lat: 28.68, lng: 115.88 }, // 南昌昌北
+    'ZBYN': { lat: 37.78, lng: 112.56 }, // 太原武宿
+    'ZBHH': { lat: 40.82, lng: 111.78 }, // 呼和浩特白塔
+    'ZBDS': { lat: 39.61, lng: 109.92 }, // 鄂尔多斯伊金霍洛
+    'ZGKL': { lat: 25.33, lng: 110.09 }, // 桂林两江
+    'ZSCG': { lat: 31.98, lng: 119.81 }, // 常州奔牛
+    'ZSNT': { lat: 32.00, lng: 121.07 }, // 南通兴东
+    'ZSXZ': { lat: 34.07, lng: 117.21 }, // 徐州观音
+    'ZSVA': { lat: 32.35, lng: 119.42 }, // 扬州泰州
+    'ZSWX': { lat: 31.59, lng: 120.30 }, // 无锡硕放
+    'ZGOW': { lat: 23.49, lng: 116.23 }, // 揭阳潮汕
+    'ZPLJ': { lat: 26.83, lng: 100.23 }, // 丽江三义
+    'ZLIC': { lat: 38.32, lng: 106.21 }, // 银川河东
+    'ZYDQ': { lat: 46.58, lng: 125.15 } // 大庆萨尔图
 };
 
 // 机型详细数据（包含更准确的巡航速度和爬升/下降因素）
@@ -1114,13 +1185,26 @@ function selectRandomRoute() {
                 
                 // 随机选择起飞机场和降落机场
                 const departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
+                
+                // 确保筛选出的降落机场与起飞机场绝对不同，并且有有效的坐标信息
                 let validArrivalAirports = filteredArrivalAirports.filter(airport => 
-                    airport.code !== departure.code && airportCoordinates[airport.code]
+                    airport.code !== departure.code && 
+                    airportCoordinates[airport.code] &&
+                    airport.name !== departure.name // 额外检查机场名称是否相同，防止同名不同代码的情况
                 );
                 
-                if (validArrivalAirports.length === 0) continue;
+                if (validArrivalAirports.length === 0) {
+                    // 如果没有符合条件的降落机场，继续尝试
+                    console.log(`没有找到与${departure.code}不同的降落机场，尝试下一个起飞机场`);
+                    continue;
+                }
                 
                 const arrival = validArrivalAirports[Math.floor(Math.random() * validArrivalAirports.length)];
+                
+                // 再次确认起飞机场和降落机场不同（双重保险）
+                if (departure.code === arrival.code || departure.name === arrival.name) {
+                    continue;
+                }
                 
                 // 确保机场坐标存在
                 if (!airportCoordinates[departure.code]) continue;
