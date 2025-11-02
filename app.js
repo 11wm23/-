@@ -195,6 +195,21 @@ const includeStopover = document.getElementById('include-stopover');
 const stopoverContainer = document.getElementById('stopover-container');
 const stopoverAirport = document.getElementById('stopover-airport');
 
+// 获取自定义机场选择器元素
+const customDepartureContainer = document.getElementById('custom-departure-container');
+const customDepartureSearch = document.getElementById('custom-departure-search');
+const departureSearchResults = document.getElementById('departure-search-results');
+const selectedDepartureAirport = document.getElementById('selected-departure-airport');
+const customArrivalContainer = document.getElementById('custom-arrival-container');
+const customArrivalSearch = document.getElementById('custom-arrival-search');
+const arrivalSearchResults = document.getElementById('arrival-search-results');
+const selectedArrivalAirport = document.getElementById('selected-arrival-airport');
+// 中转机场不再支持自定义，移除相关DOM元素引用
+
+// 机场选择相关变量
+let currentlySelectedDeparture = null;
+let currentlySelectedArrival = null;
+
 // 获取DOM元素并确保它们存在
 let flightTimeRange;
 try {
@@ -477,6 +492,309 @@ for (const [key, data] of Object.entries(aircraftData)) {
     aircraftSpeeds[key] = data.cruiseSpeed;
 }
 
+// 切换自定义机场选择器的显示状态
+function toggleCustomAirportSelector(type) {
+    if (type === 'departure' && customDepartureContainer) {
+        customDepartureContainer.style.display = departureCountry?.value === 'custom' ? 'block' : 'none';
+        if (departureCountry?.value !== 'custom') {
+            // 清空选择
+            if (customDepartureSearch) customDepartureSearch.value = '';
+            if (departureSearchResults) departureSearchResults.style.display = 'none';
+            if (selectedDepartureAirport) selectedDepartureAirport.style.display = 'none';
+            currentlySelectedDeparture = null;
+        }
+        
+        // 当起飞机场选择自定义时，限制降落机场不能选择自定义
+        updateArrivalCountryOptions();
+    } else if (type === 'arrival' && customArrivalContainer) {
+        customArrivalContainer.style.display = arrivalCountry?.value === 'custom' ? 'block' : 'none';
+        if (arrivalCountry?.value !== 'custom') {
+            // 清空选择
+            if (customArrivalSearch) customArrivalSearch.value = '';
+            if (arrivalSearchResults) arrivalSearchResults.style.display = 'none';
+            if (selectedArrivalAirport) selectedArrivalAirport.style.display = 'none';
+            currentlySelectedArrival = null;
+        }
+        
+        // 当降落机场选择自定义时，限制起飞机场不能选择自定义
+        updateDepartureCountryOptions();
+    }
+}
+
+// 更新降落机场国家选择器选项
+function updateArrivalCountryOptions() {
+    if (!arrivalCountry) return;
+    
+    const customOption = Array.from(arrivalCountry.options).find(option => option.value === 'custom');
+    if (!customOption) return;
+    
+    // 如果起飞机场选择了自定义，则隐藏降落机场的自定义选项
+    if (departureCountry?.value === 'custom') {
+        customOption.style.display = 'none';
+        // 如果当前降落机场选择的是自定义，自动切换到'all'
+        if (arrivalCountry.value === 'custom') {
+            arrivalCountry.value = 'all';
+            toggleCustomAirportSelector('arrival');
+        }
+    } else {
+        customOption.style.display = 'block';
+    }
+}
+
+// 更新起飞机场国家选择器选项
+function updateDepartureCountryOptions() {
+    if (!departureCountry) return;
+    
+    const customOption = Array.from(departureCountry.options).find(option => option.value === 'custom');
+    if (!customOption) return;
+    
+    // 如果降落机场选择了自定义，则隐藏起飞机场的自定义选项
+    if (arrivalCountry?.value === 'custom') {
+        customOption.style.display = 'none';
+        // 如果当前起飞机场选择的是自定义，自动切换到'all'
+        if (departureCountry.value === 'custom') {
+            departureCountry.value = 'all';
+            toggleCustomAirportSelector('departure');
+        }
+    } else {
+        customOption.style.display = 'block';
+    }
+}
+
+// 搜索机场
+function searchAirports(searchTerm, type) {
+    if (!searchTerm.trim()) {
+        if (type === 'departure' && departureSearchResults) {
+            departureSearchResults.style.display = 'none';
+        } else if (type === 'arrival' && arrivalSearchResults) {
+            arrivalSearchResults.style.display = 'none';
+        }
+        return;
+    }
+    
+    // 将搜索词转换为小写以进行不区分大小写的搜索
+    const searchLower = searchTerm.toLowerCase();
+    
+    // 搜索匹配的机场
+    const matchingAirports = airports.filter(airport => {
+        return (
+            airport.name.toLowerCase().includes(searchLower) ||
+            airport.code.toLowerCase().includes(searchLower)
+        );
+    });
+    
+    // 去除重复的机场（使用机场代码作为唯一标识符）
+    const uniqueAirports = [];
+    const airportCodes = new Set();
+    
+    matchingAirports.forEach(airport => {
+        if (!airportCodes.has(airport.code)) {
+            airportCodes.add(airport.code);
+            uniqueAirports.push(airport);
+        }
+    });
+    
+    // 显示搜索结果
+    displaySearchResults(uniqueAirports, type);
+}
+
+// 显示搜索结果
+function displaySearchResults(results, type) {
+    let resultsContainer;
+    if (type === 'departure') {
+        resultsContainer = departureSearchResults;
+    } else if (type === 'arrival') {
+        resultsContainer = arrivalSearchResults;
+    } else {
+        return; // 中转机场不再支持自定义，忽略其他类型
+    }
+    
+    if (!resultsContainer) return;
+    
+    // 清空结果容器
+    resultsContainer.innerHTML = '';
+    
+    if (results.length === 0) {
+        const noResultItem = document.createElement('div');
+        noResultItem.className = 'search-result-item';
+        noResultItem.textContent = '未找到匹配的机场';
+        noResultItem.style.padding = '8px 12px';
+        noResultItem.style.color = '#666';
+        resultsContainer.appendChild(noResultItem);
+    } else {
+        // 限制显示结果数量
+        const limitedResults = results.slice(0, 20);
+        
+        limitedResults.forEach(airport => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'search-result-item';
+            resultItem.style.padding = '8px 12px';
+            resultItem.style.cursor = 'pointer';
+            resultItem.style.borderBottom = '1px solid #f0f0f0';
+            resultItem.style.backgroundColor = '#fff';
+            
+            // 鼠标悬停效果
+            resultItem.addEventListener('mouseover', function() {
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            resultItem.addEventListener('mouseout', function() {
+                this.style.backgroundColor = '#fff';
+            });
+            
+            // 点击选择机场
+            resultItem.addEventListener('click', function() {
+                selectAirport(airport, type);
+            });
+            
+            // 显示机场信息
+            const countryName = countryMap[airport.country] || airport.country;
+            resultItem.innerHTML = `
+                <div style="font-weight: 500;">${airport.name}</div>
+                <div style="font-size: 0.9em; color: #666;">${airport.code} - ${countryName}</div>
+            `;
+            
+            resultsContainer.appendChild(resultItem);
+        });
+    }
+    
+    resultsContainer.style.display = 'block';
+}
+
+// 选择机场
+function selectAirport(airport, type) {
+    if (type === 'departure') {
+        // 隐藏搜索结果
+        if (departureSearchResults) departureSearchResults.style.display = 'none';
+        
+        // 清空搜索输入
+        if (customDepartureSearch) customDepartureSearch.value = '';
+        
+        // 显示已选择的机场
+        if (selectedDepartureAirport) {
+            const countryName = countryMap[airport.country] || airport.country;
+            selectedDepartureAirport.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 500;">已选择: ${airport.name} (${airport.code})</span>
+                        <span style="font-size: 0.9em; color: #666; margin-left: 10px;">${countryName}</span>
+                    </div>
+                    <button id="clear-departure" style="background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px 8px;">清除</button>
+                </div>
+            `;
+            selectedDepartureAirport.style.display = 'block';
+            
+            // 添加清除按钮事件
+            document.getElementById('clear-departure').addEventListener('click', function() {
+                selectedDepartureAirport.style.display = 'none';
+                currentlySelectedDeparture = null;
+            });
+        }
+        
+        // 存储选择的机场
+        currentlySelectedDeparture = airport;
+    } else if (type === 'arrival') {
+        // 隐藏搜索结果
+        if (arrivalSearchResults) arrivalSearchResults.style.display = 'none';
+        
+        // 清空搜索输入
+        if (customArrivalSearch) customArrivalSearch.value = '';
+        
+        // 显示已选择的机场
+        if (selectedArrivalAirport) {
+            const countryName = countryMap[airport.country] || airport.country;
+            selectedArrivalAirport.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 500;">已选择: ${airport.name} (${airport.code})</span>
+                        <span style="font-size: 0.9em; color: #666; margin-left: 10px;">${countryName}</span>
+                    </div>
+                    <button id="clear-arrival" style="background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px 8px;">清除</button>
+                </div>
+            `;
+            selectedArrivalAirport.style.display = 'block';
+            
+            // 添加清除按钮事件
+            document.getElementById('clear-arrival').addEventListener('click', function() {
+                selectedArrivalAirport.style.display = 'none';
+                currentlySelectedArrival = null;
+            });
+        }
+        
+        // 存储选择的机场
+        currentlySelectedArrival = airport;
+    } else if (type === 'stopover') {
+        // 隐藏搜索结果
+        if (stopoverSearchResults) stopoverSearchResults.style.display = 'none';
+        
+        // 清空搜索输入
+        if (customStopoverSearch) customStopoverSearch.value = '';
+        
+        // 显示已选择的机场
+        if (selectedStopoverAirport) {
+            const countryName = countryMap[airport.country] || airport.country;
+            selectedStopoverAirport.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-weight: 500;">已选择: ${airport.name} (${airport.code})</span>
+                        <span style="font-size: 0.9em; color: #666; margin-left: 10px;">${countryName}</span>
+                    </div>
+                    <button id="clear-stopover" style="background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px 8px;">清除</button>
+                </div>
+            `;
+            selectedStopoverAirport.style.display = 'block';
+            
+            // 添加清除按钮事件
+            document.getElementById('clear-stopover').addEventListener('click', function() {
+                selectedStopoverAirport.style.display = 'none';
+                currentlySelectedStopover = null;
+            });
+        }
+        
+        // 存储选择的机场
+        currentlySelectedStopover = airport;
+    }
+}
+
+// 初始化机场搜索功能
+function initAirportSearch() {
+    // 为起飞机场搜索框添加事件监听
+    if (customDepartureSearch) {
+        customDepartureSearch.addEventListener('input', function() {
+            searchAirports(this.value, 'departure');
+        });
+        
+        // 点击其他区域隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            if (customDepartureSearch && 
+                !customDepartureSearch.contains(event.target) && 
+                departureSearchResults && 
+                !departureSearchResults.contains(event.target)) {
+                departureSearchResults.style.display = 'none';
+            }
+        });
+    }
+    
+    // 为降落机场搜索框添加事件监听
+    if (customArrivalSearch) {
+        customArrivalSearch.addEventListener('input', function() {
+            searchAirports(this.value, 'arrival');
+        });
+        
+        // 点击其他区域隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            if (customArrivalSearch && 
+                !customArrivalSearch.contains(event.target) && 
+                arrivalSearchResults && 
+                !arrivalSearchResults.contains(event.target)) {
+                arrivalSearchResults.style.display = 'none';
+            }
+        });
+    }
+    
+    // 中转机场不再支持自定义，移除搜索相关代码
+}
+
 // 使用Haversine公式计算两个坐标之间的距离（公里）
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // 地球半径（公里）
@@ -540,26 +858,138 @@ function filterAirportsByCountry(airportsList, countryCode) {
 // 随机选择两个不同的机场，确保飞行时间在两小时以上
 function selectRandomRoute() {
     try {
-        // 获取用户选择的国家
-        const departureCountryCode = departureCountry.value || 'all';
-        const arrivalCountryCode = arrivalCountry.value || 'all';
+        // 处理自定义机场选择
+        let departureAirportSelection = null;
+        let arrivalAirportSelection = null;
+        let stopoverAirportSelection = null;
         
+        // 获取用户选择的国家
+        const departureCountryCode = departureCountry?.value || 'all';
+        const arrivalCountryCode = arrivalCountry?.value || 'all';
+        const stopoverCountryCode = stopoverCountry?.value || 'all';
+        
+        // 检查是否选择了自定义起飞机场
+        if (departureCountryCode === 'custom') {
+            if (!currentlySelectedDeparture) {
+                alert('请搜索并选择一个有效的起飞机场');
+                return null;
+            }
+            departureAirportSelection = currentlySelectedDeparture;
+        }
+        
+        // 检查是否选择了自定义降落机场
+        if (arrivalCountryCode === 'custom') {
+            if (!currentlySelectedArrival) {
+                alert('请搜索并选择一个有效的降落机场');
+                return null;
+            }
+            arrivalAirportSelection = currentlySelectedArrival;
+        }
+        
+        // 中转机场不再支持自定义，移除相关检查
+        
+        // 检查是否需要包含中转机场
+        const shouldIncludeStopover = includeStopover && includeStopover.value === 'yes';
+        
+        // 确保至少有一个机场是随机选择的
+        const allAirportsCustomized = departureAirportSelection && arrivalAirportSelection;
+        if (allAirportsCustomized) {
+            alert('请至少保留一个机场为随机选择状态');
+            return null;
+        }
+        
+        // 如果同时选择了自定义起飞机场和降落机场（非中转模式）
+        if (!shouldIncludeStopover && departureAirportSelection && arrivalAirportSelection) {
+            if (departureAirportSelection.code === arrivalAirportSelection.code) {
+                alert('起飞机场和降落机场不能相同');
+                return null;
+            }
+            
+            // 计算飞行数据
+            const depCoords = airportCoordinates[departureAirportSelection.code];
+            const arrCoords = airportCoordinates[arrivalAirportSelection.code];
+            
+            if (!depCoords || !arrCoords) {
+                alert('无法获取机场坐标信息');
+                return null;
+            }
+            
+            const distance = calculateDistance(depCoords.lat, depCoords.lng, arrCoords.lat, arrCoords.lng);
+            const flightTime = calculateFlightTime(distance, aircraftType?.value || '');
+            
+            // 获取时间范围
+            const timeRange = flightTimeRange ? flightTimeRange.value : 'all';
+            
+            // 检查是否符合时间范围要求
+            if (timeRange !== 'all') {
+                const hours = flightTime;
+                let inRange = false;
+                
+                switch (timeRange) {
+                    case 'ultrashort':
+                        inRange = hours >= 1 && hours <= 2;
+                        break;
+                    case 'short':
+                        inRange = hours > 2 && hours <= 5;
+                        break;
+                    case 'medium':
+                        inRange = hours > 5 && hours <= 12;
+                        break;
+                    case 'long':
+                        inRange = hours > 12 && hours <= 20;
+                        break;
+                    case 'ultralong':
+                        inRange = hours > 20;
+                        break;
+                    default:
+                        inRange = true;
+                }
+                
+                if (!inRange) {
+                    alert('该航线的飞行时间不在指定范围内');
+                    return null;
+                }
+            } else {
+                // 当选择所有时间时，确保飞行时间超过1小时
+                if (flightTime <= 1) {
+                    alert('飞行时间过短，请选择更长的航线');
+                    return null;
+                }
+            }
+            
+            // 格式化时间
+            const formattedTime = formatFlightTime(flightTime);
+            
+            // 返回有效的航线
+            return {
+                departure: departureAirportSelection,
+                arrival: arrivalAirportSelection,
+                aircraft: aircraftType?.options ? aircraftType.options[aircraftType.selectedIndex].text : aircraftType?.value || '',
+                timestamp: new Date().toLocaleString('zh-CN'),
+                distance: Math.round(distance),
+                flightTime: formattedTime
+            };
+        }
+        
+        // 常规随机选择逻辑
         // 筛选机场并去重
-        const filteredDepartureAirports = filterAirportsByCountry(airports, departureCountryCode).filter((airport, index, self) =>
-            index === self.findIndex(a => a.code === airport.code)
-        );
-        const filteredArrivalAirports = filterAirportsByCountry(airports, arrivalCountryCode).filter((airport, index, self) =>
-            index === self.findIndex(a => a.code === airport.code)
-        );
+        const filteredDepartureAirports = departureAirportSelection ? 
+            [departureAirportSelection] : 
+            filterAirportsByCountry(airports, departureCountryCode).filter((airport, index, self) =>
+                index === self.findIndex(a => a.code === airport.code)
+            );
+        
+        const filteredArrivalAirports = arrivalAirportSelection ? 
+            [arrivalAirportSelection] : 
+            filterAirportsByCountry(airports, arrivalCountryCode).filter((airport, index, self) =>
+                index === self.findIndex(a => a.code === airport.code)
+            );
         
         // 确保有足够的机场可供选择
         if (filteredDepartureAirports.length === 0 || filteredArrivalAirports.length === 0) {
             alert('所选国家没有可用的机场，请选择其他国家。');
             return null;
         }
-        
-        // 检查是否需要包含中转机场
-        const shouldIncludeStopover = includeStopover && includeStopover.value === 'yes';
         
         // 获取用户选择的时间范围
         const timeRange = flightTimeRange ? flightTimeRange.value : 'all';
@@ -577,16 +1007,16 @@ function selectRandomRoute() {
                 const departure = filteredDepartureAirports[Math.floor(Math.random() * filteredDepartureAirports.length)];
                 if (!departure || !airportCoordinates[departure.code]) continue;
                 
-                // 获取用户选择的中转机场国家
-                const stopoverCountryCode = stopoverCountry ? stopoverCountry.value || 'all' : 'all';
                 // 筛选中转机场并去重
-                const possibleStopoverAirports = airports.filter(airport => 
-                    airport.code !== departure.code && 
-                    airportCoordinates[airport.code] &&
-                    (stopoverCountryCode === 'all' || airport.country === stopoverCountryCode)
-                ).filter((airport, index, self) =>
-                    index === self.findIndex(a => a.code === airport.code)
-                );
+                const possibleStopoverAirports = stopoverAirportSelection ? 
+                    [stopoverAirportSelection] : 
+                    airports.filter(airport => 
+                        airport.code !== departure.code && 
+                        airportCoordinates[airport.code] &&
+                        (stopoverCountryCode === 'all' || airport.country === stopoverCountryCode)
+                    ).filter((airport, index, self) =>
+                        index === self.findIndex(a => a.code === airport.code)
+                    );
                 
                 if (possibleStopoverAirports.length === 0) continue;
                 
@@ -1059,6 +1489,26 @@ function toggleHistoryView() {
 function init() {
     // 添加事件监听器
     drawBtn.addEventListener('click', handleDrawClick);
+    
+    // 添加国家选择变化事件监听
+    if (departureCountry) {
+        departureCountry.addEventListener('change', function() {
+            toggleCustomAirportSelector('departure');
+        });
+    }
+    if (arrivalCountry) {
+        arrivalCountry.addEventListener('change', function() {
+            toggleCustomAirportSelector('arrival');
+        });
+    }
+    // 中转机场不再支持自定义，移除相关事件监听
+    
+    // 初始化机场搜索功能
+    initAirportSearch();
+    
+    // 初始化时应用限制规则
+    updateArrivalCountryOptions();
+    updateDepartureCountryOptions();
     
     // 中转机场选项变化时的处理
         if (includeStopover) {
