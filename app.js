@@ -40,26 +40,36 @@ const airports = [
     { code: 'RKSI', name: '首尔仁川国际机场', country: 'korea' },
     { code: 'RKSS', name: '首尔金浦国际机场', country: 'korea' },
     { code: 'RKPK', name: '釜山金海国际机场', country: 'korea' },
+    { code: 'RKPU', name: '济州国际机场', country: 'korea' },
+    { code: 'RKTD', name: '大邱国际机场', country: 'korea' },
     
     // 泰国机场
     { code: 'VTBS', name: '曼谷素万那普国际机场', country: 'thailand' },
     { code: 'VTBD', name: '曼谷廊曼国际机场', country: 'thailand' },
     { code: 'VTSP', name: '普吉岛国际机场', country: 'thailand' },
+    { code: 'VTCC', name: '清迈国际机场', country: 'thailand' },
+    { code: 'VTSM', name: '苏梅岛国际机场', country: 'thailand' },
     
     // 新加坡机场
     { code: 'WSSS', name: '新加坡樟宜国际机场', country: 'singapore' },
+    { code: 'WSAP', name: '实里达机场', country: 'singapore' },
+    { code: 'WSPT', name: '巴耶利峇空军基地', country: 'singapore' },
+    { code: 'WSAC', name: '登加空军基地', country: 'singapore' },
+    { code: 'WSAR', name: '三巴旺空军基地', country: 'singapore' },
     
     // 印度机场
     { code: 'VIDP', name: '新德里英迪拉·甘地国际机场', country: 'india' },
     { code: 'VABB', name: '孟买贾特拉帕蒂·希瓦吉国际机场', country: 'india' },
     { code: 'VOMM', name: '钦奈国际机场', country: 'india' },
     { code: 'VECC', name: '加尔各答内塔吉·苏巴斯·钱德拉·鲍斯国际机场', country: 'india' },
+    { code: 'VOBL', name: '班加罗尔国际机场', country: 'india' },
     
     // 阿联酋机场
     { code: 'OMDB', name: '迪拜国际机场', country: 'uae' },
     { code: 'OMSJ', name: '沙迦国际机场', country: 'uae' },
     { code: 'OMAA', name: '阿布扎比国际机场', country: 'uae' },
     { code: 'OTHH', name: '多哈哈马德国际机场', country: 'uae' },
+    { code: 'OMAD', name: '迪拜阿勒马克图姆国际机场', country: 'uae' },
     
     // 英国机场
     { code: 'EGLL', name: '伦敦希思罗国际机场', country: 'uk' },
@@ -73,6 +83,7 @@ const airports = [
     { code: 'LFPO', name: '巴黎奥利机场', country: 'france' },
     { code: 'LFBO', name: '里昂圣埃克絮佩里机场', country: 'france' },
     { code: 'LFMN', name: '尼斯蓝色海岸机场', country: 'france' },
+    { code: 'LFTZ', name: '图卢兹布拉尼亚克机场', country: 'france' },
     
     // 德国机场
     { code: 'EDDF', name: '法兰克福国际机场', country: 'germany' },
@@ -86,33 +97,47 @@ const airports = [
     { code: 'LEBL', name: '巴塞罗那埃尔普拉特机场', country: 'spain' },
     { code: 'LEPA', name: '马略卡岛帕尔马机场', country: 'spain' },
     { code: 'LEMG', name: '马拉加机场', country: 'spain' },
+    { code: 'LEVC', name: '瓦伦西亚机场', country: 'spain' },
     
     // 荷兰机场
     { code: 'EHAM', name: '阿姆斯特丹史基浦机场', country: 'netherlands' },
+    { code: 'EHBK', name: '鹿特丹海牙机场', country: 'netherlands' },
+    { code: 'EHEH', name: '埃因霍温机场', country: 'netherlands' },
+    { code: 'EHLE', name: '莱利斯塔德机场', country: 'netherlands' },
+    { code: 'EHKD', name: '格罗宁根机场', country: 'netherlands' },
     
     // 瑞士机场
     { code: 'LSZH', name: '苏黎世国际机场', country: 'switzerland' },
     { code: 'LSGG', name: '日内瓦国际机场', country: 'switzerland' },
+    { code: 'LSZA', name: '巴塞尔-米卢斯-弗赖堡欧洲机场', country: 'switzerland' },
+    { code: 'LSZB', name: '伯尔尼机场', country: 'switzerland' },
+    { code: 'LSZR', name: '卢加诺机场', country: 'switzerland' },
     
     // 土耳其机场
     { code: 'LTFM', name: '伊斯坦布尔国际机场', country: 'turkey' },
     { code: 'LTBA', name: '伊斯坦布尔阿塔图尔克机场', country: 'turkey' },
     { code: 'LTFJ', name: '安塔利亚机场', country: 'turkey' },
+    { code: 'LTAC', name: '伊兹密尔阿德南·曼德列斯机场', country: 'turkey' },
+    { code: 'LTAI', name: '安卡拉埃森博阿机场', country: 'turkey' },
     
     // 意大利机场
     { code: 'LIRF', name: '罗马菲乌米奇诺机场', country: 'italy' },
     { code: 'LIMC', name: '米兰马尔彭萨机场', country: 'italy' },
     { code: 'LIPE', name: '威尼斯马可·波罗机场', country: 'italy' },
+    { code: 'LIRA', name: '罗马钱皮诺机场', country: 'italy' },
+    { code: 'LIML', name: '米兰利纳特机场', country: 'italy' },
     
     // 俄罗斯机场
     { code: 'UUDD', name: '莫斯科多莫杰多沃国际机场', country: 'russia' },
     { code: 'UUEE', name: '莫斯科谢列梅捷沃国际机场', country: 'russia' },
     { code: 'ULLI', name: '圣彼得堡普尔科沃机场', country: 'russia' },
+    { code: 'UACC', name: '索契国际机场', country: 'russia' },
+    { code: 'UNKL', name: '新西伯利亚托尔马切沃机场', country: 'russia' },
     
     // 美国机场
     { code: 'KJFK', name: '纽约肯尼迪国际机场', country: 'usa' },
     { code: 'KLGA', name: '纽约拉瓜迪亚机场', country: 'usa' },
-    { code: 'EWR', name: '纽瓦克自由国际机场', country: 'usa' },
+    { code: 'KEWR', name: '纽瓦克自由国际机场', country: 'usa' },
     { code: 'KLAX', name: '洛杉矶国际机场', country: 'usa' },
     { code: 'KORD', name: '芝加哥奥黑尔国际机场', country: 'usa' },
     { code: 'KMDW', name: '芝加哥中途国际机场', country: 'usa' },
@@ -130,51 +155,84 @@ const airports = [
     { code: 'CYVR', name: '温哥华国际机场', country: 'canada' },
     { code: 'CYUL', name: '蒙特利尔皮埃尔·埃利奥特·特鲁多国际机场', country: 'canada' },
     { code: 'CYOW', name: '渥太华麦克唐纳-卡蒂埃国际机场', country: 'canada' },
+    { code: 'CYEG', name: '埃德蒙顿国际机场', country: 'canada' },
     
     // 澳大利亚机场
     { code: 'YSSY', name: '悉尼金斯福德·史密斯国际机场', country: 'australia' },
     { code: 'YMML', name: '墨尔本国际机场', country: 'australia' },
     { code: 'YBBN', name: '布里斯班机场', country: 'australia' },
     { code: 'YPPH', name: '珀斯机场', country: 'australia' },
+    { code: 'YSCB', name: '阿德莱德机场', country: 'australia' },
     
     // 新西兰机场
     { code: 'NZAA', name: '奥克兰国际机场', country: 'newzealand' },
     { code: 'NZCH', name: '克赖斯特彻奇国际机场', country: 'newzealand' },
+    { code: 'NZWN', name: '惠灵顿国际机场', country: 'newzealand' },
+    { code: 'NZQN', name: '皇后镇国际机场', country: 'newzealand' },
+    { code: 'NZPM', name: '罗托鲁瓦国际机场', country: 'newzealand' },
     
     // 巴西机场
     { code: 'SBGR', name: '圣保罗瓜鲁柳斯国际机场', country: 'brazil' },
     { code: 'SBBR', name: '里约热内卢加利昂国际机场', country: 'brazil' },
     { code: 'SBSP', name: '圣保罗孔戈尼亚斯机场', country: 'brazil' },
+    { code: 'SBGL', name: '里约热内卢桑托斯·杜蒙特机场', country: 'brazil' },
+    { code: 'SBIS', name: '巴西利亚国际机场', country: 'brazil' },
     
     // 阿根廷机场
     { code: 'SAEZ', name: '布宜诺斯艾利斯埃塞萨国际机场', country: 'argentina' },
+    { code: 'SABE', name: '布宜诺斯艾利斯霍尔赫·纽贝里机场', country: 'argentina' },
+    { code: 'SACL', name: '科尔多瓦国际机场', country: 'argentina' },
+    { code: 'SAWH', name: '罗萨里奥国际机场', country: 'argentina' },
+    { code: 'SAMM', name: '门多萨国际机场', country: 'argentina' },
     
     // 哥伦比亚机场
     { code: 'SKBO', name: '波哥大埃尔多拉多国际机场', country: 'colombia' },
+    { code: 'SKRG', name: '麦德林何塞·玛丽亚·科尔多瓦国际机场', country: 'colombia' },
+    { code: 'SKCL', name: '卡塔赫纳拉斐尔·努涅斯国际机场', country: 'colombia' },
+    { code: 'SKPE', name: '佩雷拉马努埃尔·马里亚·波哥大国际机场', country: 'colombia' },
+    { code: 'SKSP', name: '圣玛尔塔罗德里戈·查莫罗国际机场', country: 'colombia' },
     
     // 墨西哥机场
     { code: 'MMMX', name: '墨西哥城贝尼托·胡亚雷斯国际机场', country: 'mexico' },
     { code: 'MMGL', name: '瓜达拉哈拉国际机场', country: 'mexico' },
+    { code: 'MMUN', name: '坎昆国际机场', country: 'mexico' },
+    { code: 'MMAM', name: '蒙特雷国际机场', country: 'mexico' },
+    { code: 'MMPR', name: '普埃布拉国际机场', country: 'mexico' },
     
     // 南非机场
     { code: 'FAJS', name: '约翰内斯堡奥利弗·坦博国际机场', country: 'southafrica' },
     { code: 'FACT', name: '开普敦国际机场', country: 'southafrica' },
+    { code: 'FALW', name: '德班沙卡国王国际机场', country: 'southafrica' },
+    { code: 'FAKN', name: '约翰内斯堡兰特国际机场', country: 'southafrica' },
+    { code: 'FAPE', name: '伊丽莎白港国际机场', country: 'southafrica' },
     
     // 沙特阿拉伯机场
     { code: 'OERK', name: '利雅得哈立德国王国际机场', country: 'saudiarabia' },
     { code: 'OEJN', name: '吉达阿卜杜勒-阿齐兹国王国际机场', country: 'saudiarabia' },
+    { code: 'OESF', name: '达曼法赫德国王国际机场', country: 'saudiarabia' },
+    { code: 'OEGS', name: '麦地那穆罕默德·本·阿卜杜勒-阿齐兹亲王国际机场', country: 'saudiarabia' },
+    { code: 'OETF', name: '塔伊夫国际机场', country: 'saudiarabia' },
     
     // 卡塔尔机场
     { code: 'OTHH', name: '多哈哈马德国际机场', country: 'qatar' },
-    { code: 'OTBD', name: '多哈旧机场（多哈国际机场）', country: 'qatar' },
-    { code: 'OTMS', name: '乌姆赛义德军用机场', country: 'qatar' },
-    { code: 'OTGL', name: '阿尔乌代德空军基地', country: 'qatar' },
+    { code: 'OTBD', name: '多哈旧机场', country: 'qatar' },
+    { code: 'OTCR', name: '乌姆赛义德机场', country: 'qatar' },
+    { code: 'OTBK', name: '阿尔乌代德空军基地', country: 'qatar' },
+    { code: 'OTDM', name: '杜汉机场', country: 'qatar' },
     
     // 科威特机场
     { code: 'OKBK', name: '科威特国际机场', country: 'kuwait' },
+    { code: 'OKTY', name: '艾哈迈迪机场', country: 'kuwait' },
+    { code: 'OKBI', name: '艾因机场', country: 'kuwait' },
+    { code: 'OKKA', name: '科威特军事机场', country: 'kuwait' },
+    { code: 'OKKH', name: '贾赫拉机场', country: 'kuwait' },
     
     // 巴林机场
     { code: 'OBBI', name: '巴林国际机场', country: 'bahrain' },
+    { code: 'OBMM', name: '穆哈拉格机场', country: 'bahrain' },
+    { code: 'OBBH', name: '哈马德国王空军基地', country: 'bahrain' },
+    { code: 'OBBA', name: '阿德拉尔机场', country: 'bahrain' },
+    { code: 'OBBD', name: '迪拉兹机场', country: 'bahrain' },
     
     // 补充中国机场
     { code: 'ZHHH', name: '武汉天河国际机场', country: 'china' },
