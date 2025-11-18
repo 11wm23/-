@@ -237,7 +237,7 @@ const airports = [
     // 补充中国机场
     { code: 'ZHHH', name: '武汉天河国际机场', country: 'china' },
     { code: 'ZGHA', name: '长沙黄花国际机场', country: 'china' },
-    { code: 'ZWOW', name: '乌鲁木齐天山国际机场', country: 'china' },
+    { code: 'ZWWW', name: '乌鲁木齐天山国际机场', country: 'china' },
     { code: 'ZHCC', name: '郑州新郑国际机场', country: 'china' },
     { code: 'ZJSY', name: '三亚凤凰国际机场', country: 'china' },
     { code: 'ZJHK', name: '海口美兰国际机场', country: 'china' },
@@ -269,7 +269,17 @@ const airports = [
     { code: 'ZGOW', name: '揭阳潮汕国际机场', country: 'china' },
     { code: 'ZPLJ', name: '丽江三义国际机场', country: 'china' },
     { code: 'ZLIC', name: '银川河东国际机场', country: 'china' },
-    { code: 'ZYDQ', name: '大庆萨尔图机场', country: 'china' }
+    { code: 'ZYDQ', name: '大庆萨尔图机场', country: 'china' },
+    
+    // 港澳台机场
+    { code: 'VHHH', name: '香港国际机场', country: 'china' },
+    { code: 'VMMC', name: '澳门国际机场', country: 'china' },
+    { code: 'RCTP', name: '台北桃园国际机场', country: 'china' },
+    { code: 'RCSS', name: '台北松山机场', country: 'china' },
+    { code: 'RCKU', name: '台中国际机场', country: 'china' },
+    { code: 'RCKH', name: '高雄国际机场', country: 'china' },
+    { code: 'RCAA', name: '花莲机场', country: 'china' },
+    { code: 'RCLY', name: '台东机场', country: 'china' }
 ];
 
 // 获取DOM元素
@@ -296,11 +306,16 @@ const customArrivalContainer = document.getElementById('custom-arrival-container
 const customArrivalSearch = document.getElementById('custom-arrival-search');
 const arrivalSearchResults = document.getElementById('arrival-search-results');
 const selectedArrivalAirport = document.getElementById('selected-arrival-airport');
-// 中转机场不再支持自定义，移除相关DOM元素引用
+// 中转机场自定义功能元素
+const customStopoverContainer = document.getElementById('custom-stopover-container');
+const customStopoverSearch = document.getElementById('custom-stopover-search');
+const stopoverSearchResults = document.getElementById('stopover-search-results');
+const selectedStopoverAirport = document.getElementById('selected-stopover-airport');
 
 // 机场选择相关变量
 let currentlySelectedDeparture = null;
 let currentlySelectedArrival = null;
+let currentlySelectedStopover = null;
 
 // 获取DOM元素并确保它们存在
 let flightTimeRange;
@@ -488,7 +503,7 @@ const airportCoordinates = {
     // 补充中国机场坐标
     'ZHHH': { lat: 30.60, lng: 114.20 }, // 武汉天河
     'ZGHA': { lat: 28.22, lng: 113.01 }, // 长沙黄花
-    'ZWOW': { lat: 43.90, lng: 87.50 }, // 乌鲁木齐天山国际机场
+    'ZWWW': { lat: 43.90, lng: 87.50 }, // 乌鲁木齐天山国际机场
     'ZHCC': { lat: 34.53, lng: 113.81 }, // 郑州新郑
     'ZJSY': { lat: 18.24, lng: 109.51 }, // 三亚凤凰
     'ZJHK': { lat: 20.02, lng: 110.33 }, // 海口美兰
@@ -520,7 +535,17 @@ const airportCoordinates = {
     'ZGOW': { lat: 23.49, lng: 116.23 }, // 揭阳潮汕
     'ZPLJ': { lat: 26.83, lng: 100.23 }, // 丽江三义
     'ZLIC': { lat: 38.32, lng: 106.21 }, // 银川河东
-    'ZYDQ': { lat: 46.58, lng: 125.15 } // 大庆萨尔图
+    'ZYDQ': { lat: 46.58, lng: 125.15 }, // 大庆萨尔图
+    
+    // 港澳台机场坐标
+    'VHHH': { lat: 22.31, lng: 113.91 }, // 香港国际机场
+    'VMMC': { lat: 22.15, lng: 113.59 }, // 澳门国际机场
+    'RCTP': { lat: 25.07, lng: 121.23 }, // 台北桃园国际机场
+    'RCSS': { lat: 25.07, lng: 121.57 }, // 台北松山机场
+    'RCKU': { lat: 24.19, lng: 120.65 }, // 台中国际机场
+    'RCKH': { lat: 22.57, lng: 120.30 }, // 高雄国际机场
+    'RCAA': { lat: 24.02, lng: 121.60 }, // 花莲机场
+    'RCLY': { lat: 22.76, lng: 121.10 } // 台东机场
 };
 
 // 机型详细数据（包含更准确的巡航速度和爬升/下降因素）
@@ -647,6 +672,15 @@ function toggleCustomAirportSelector(type) {
         
         // 当降落机场选择自定义时，限制起飞机场不能选择自定义
         updateDepartureCountryOptions();
+    } else if (type === 'stopover' && customStopoverContainer) {
+        customStopoverContainer.style.display = stopoverCountry?.value === 'custom' ? 'block' : 'none';
+        if (stopoverCountry?.value !== 'custom') {
+            // 清空选择
+            if (customStopoverSearch) customStopoverSearch.value = '';
+            if (stopoverSearchResults) stopoverSearchResults.style.display = 'none';
+            if (selectedStopoverAirport) selectedStopoverAirport.style.display = 'none';
+            currentlySelectedStopover = null;
+        }
     }
 }
 
@@ -734,8 +768,10 @@ function displaySearchResults(results, type) {
         resultsContainer = departureSearchResults;
     } else if (type === 'arrival') {
         resultsContainer = arrivalSearchResults;
+    } else if (type === 'stopover') {
+        resultsContainer = stopoverSearchResults;
     } else {
-        return; // 中转机场不再支持自定义，忽略其他类型
+        return;
     }
     
     if (!resultsContainer) return;
@@ -921,7 +957,24 @@ function initAirportSearch() {
         });
     }
     
-    // 中转机场不再支持自定义，移除搜索相关代码
+    // 为中转机场搜索框添加事件监听
+    if (customStopoverSearch) {
+        customStopoverSearch.addEventListener('input', function() {
+            searchAirports(this.value, 'stopover');
+        });
+        
+        // 点击其他区域隐藏搜索结果
+        document.addEventListener('click', function(event) {
+            if (customStopoverSearch && 
+                !customStopoverSearch.contains(event.target) && 
+                stopoverSearchResults && 
+                !stopoverSearchResults.contains(event.target)) {
+                stopoverSearchResults.style.display = 'none';
+            }
+        });
+    }
+    
+    // 中转机场搜索功能已添加
 }
 
 // 使用Haversine公式计算两个坐标之间的距离（公里）
@@ -1015,7 +1068,14 @@ function selectRandomRoute() {
             arrivalAirportSelection = currentlySelectedArrival;
         }
         
-        // 中转机场不再支持自定义，移除相关检查
+        // 检查是否选择了自定义中转机场
+        if (stopoverCountryCode === 'custom') {
+            if (!currentlySelectedStopover) {
+                alert('请搜索并选择一个有效的中转机场');
+                return null;
+            }
+            stopoverAirportSelection = currentlySelectedStopover;
+        }
         
         // 检查是否需要包含中转机场
         const shouldIncludeStopover = includeStopover && includeStopover.value === 'yes';
@@ -1336,6 +1396,9 @@ function selectRandomRoute() {
 // 国家代码到中文名称的映射
 const countryMap = {
     'china': '中国',
+    'hongkong': '香港',
+    'macau': '澳门',
+    'taiwan': '台湾',
     'japan': '日本',
     'korea': '韩国',
     'thailand': '泰国',
@@ -1643,7 +1706,12 @@ function init() {
             toggleCustomAirportSelector('arrival');
         });
     }
-    // 中转机场不再支持自定义，移除相关事件监听
+    // 添加中转机场国家选择变化事件监听
+    if (stopoverCountry) {
+        stopoverCountry.addEventListener('change', function() {
+            toggleCustomAirportSelector('stopover');
+        });
+    }
     
     // 初始化机场搜索功能
     initAirportSearch();

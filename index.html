@@ -28,7 +28,7 @@
                     <select id="departure-country" class="form-select">
                         <option value="all">所有国家</option>
                         <option value="custom">自定义机场</option>
-                        <option value="china">中国</option>
+                        <option value="china">中国（含港澳台）</option>
                         <option value="japan">日本</option>
                         <option value="korea">韩国</option>
                         <option value="thailand">泰国</option>
@@ -71,7 +71,7 @@
                     <select id="arrival-country" class="form-select">
                         <option value="all">所有国家</option>
                         <option value="custom">自定义机场</option>
-                        <option value="china">中国</option>
+                        <option value="china">中国（含港澳台）</option>
                         <option value="japan">日本</option>
                         <option value="korea">韩国</option>
                         <option value="thailand">泰国</option>
@@ -231,7 +231,8 @@
                         <label for="stopover-country" class="form-label">选择中转机场国家:</label>
                         <select id="stopover-country" class="form-select custom-select">
                             <option value="all">所有国家</option>
-                            <option value="china">中国</option>
+                            <option value="custom">自定义机场</option>
+                            <option value="china">中国（含港澳台）</option>
                             <option value="japan">日本</option>
                             <option value="korea">韩国</option>
                             <option value="thailand">泰国</option>
@@ -261,7 +262,13 @@
                             <option value="kuwait">科威特</option>
                             <option value="bahrain">巴林</option>
                         </select>
-                        <!-- 中转机场选择器 (不再支持自定义) -->
+                        <!-- 自定义中转机场选择器，默认隐藏 -->
+                        <div id="custom-stopover-container" style="display: none; margin-top: 15px;">
+                            <label for="custom-stopover-search" class="form-label">搜索中转机场 (名称或代码):</label>
+                            <input type="text" id="custom-stopover-search" class="custom-select" placeholder="输入机场名称或代码进行搜索，如：北京或ZBAA">
+                            <div id="stopover-search-results" class="search-results" style="display: none; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-top: none;"></div>
+                            <div id="selected-stopover-airport" class="selected-airport" style="margin-top: 10px; display: none;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
